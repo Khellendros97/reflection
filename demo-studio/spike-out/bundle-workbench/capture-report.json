@@ -1,0 +1,98 @@
+{
+  "url": "http://localhost:1420/#/workbench?project=prj-1",
+  "formatVersion": 1,
+  "runs": [
+    {
+      "stable": true,
+      "quietMs": 385
+    },
+    {
+      "stable": true,
+      "quietMs": 401
+    }
+  ],
+  "stats": {
+    "interactiveTotal": 43,
+    "interactiveSemantic": 31,
+    "interactiveSupplementary": 12,
+    "interactiveVisible": 38,
+    "anchors": 38,
+    "selectorNotUnique": 0,
+    "idCollisions": 2,
+    "cssRules": 2432,
+    "inlinedSheets": 0,
+    "fontFaces": 0,
+    "unresolvedCssUrls": 0,
+    "images": 0,
+    "domNodes": 382,
+    "formStateFixed": 4,
+    "scrollStateFixed": 0
+  },
+  "determinism": {
+    "runs": 2,
+    "byteIdentical": true,
+    "note": "两次加载静止后截图字节一致"
+  },
+  "coverage": {
+    "ipcCalls": 38,
+    "uncoveredIpc": []
+  },
+  "selfContained": {
+    "unresolvedCssUrls": 0,
+    "externalImages": 0,
+    "fontFaces": 0,
+    "verdict": "自包含（除字体外无需联网）"
+  },
+  "exceptions": [],
+  "samples": {
+    "unresolvedCssUrls": [],
+    "images": [],
+    "i18nWarnings": [],
+    "ipcCalls": [
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "update_status",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "get_state",
+      "plugin:event|listen",
+      "cloud_status",
+      "plugin:event|listen",
+      "plugin:app|version",
+      "plugin:event|listen",
+      "plugin:window|is_maximized",
+      "tunnel_list",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "get_state",
+      "cloud_status",
+      "plugin:event|listen",
+      "get_state",
+      "get_state",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "ai_debug_info",
+      "sessions_get",
+      "get_state",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "staging_list",
+      "term_create",
+      "term_resize",
+      "get_state",
+      "term_resize"
+    ],
+    "determinism": {
+      "dateFrozen": true,
+      "randomSeeded": true,
+      "cssAnimationsDisabled": 1
+    },
+    "suspiciousText": []
+  }
+}

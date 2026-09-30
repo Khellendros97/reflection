@@ -1,0 +1,89 @@
+{
+  "url": "http://localhost:1420/",
+  "formatVersion": 1,
+  "runs": [
+    {
+      "stable": true,
+      "quietMs": 386
+    },
+    {
+      "stable": true,
+      "quietMs": 424
+    }
+  ],
+  "stats": {
+    "interactiveTotal": 62,
+    "interactiveVisible": 26,
+    "anchors": 26,
+    "selectorNotUnique": 0,
+    "idCollisions": 0,
+    "cssRules": 1631,
+    "inlinedSheets": 0,
+    "fontFaces": 0,
+    "unresolvedCssUrls": 0,
+    "images": 0,
+    "domNodes": 454,
+    "formStateFixed": 22,
+    "scrollStateFixed": 0
+  },
+  "determinism": {
+    "runs": 2,
+    "byteIdentical": false,
+    "note": "字节不同，需用像素阈值判定（见 diff.py）"
+  },
+  "coverage": {
+    "ipcCalls": 31,
+    "uncoveredIpc": []
+  },
+  "selfContained": {
+    "unresolvedCssUrls": 0,
+    "externalImages": 0,
+    "fontFaces": 0,
+    "verdict": "自包含（除字体外无需联网）"
+  },
+  "exceptions": [],
+  "samples": {
+    "unresolvedCssUrls": [],
+    "images": [],
+    "i18nWarnings": [],
+    "ipcCalls": [
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "update_status",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "get_state",
+      "is_config_complete",
+      "cloud_status",
+      "plugin:event|listen",
+      "plugin:app|version",
+      "plugin:event|listen",
+      "plugin:window|is_maximized",
+      "tunnel_list",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "cloud_status",
+      "plugin:event|listen",
+      "get_state",
+      "get_task_project",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "ai_debug_info",
+      "sessions_get",
+      "get_state",
+      "plugin:event|listen"
+    ],
+    "determinism": {
+      "dateFrozen": true,
+      "randomSeeded": true,
+      "cssAnimationsDisabled": 1
+    },
+    "suspiciousText": []
+  }
+}

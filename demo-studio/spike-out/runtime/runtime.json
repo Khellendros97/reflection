@@ -1,0 +1,380 @@
+{
+  "hash": "#/workbench?project=prj-1",
+  "actions": [
+    {
+      "id": "仪表盘",
+      "note": "活动栏 → 仪表盘"
+    },
+    {
+      "id": "文件资源管理器",
+      "note": "活动栏 → 文件资源管理器"
+    },
+    {
+      "id": "服务器列表",
+      "note": "活动栏 → 服务器列表"
+    },
+    {
+      "id": "命令收藏-2",
+      "note": "活动栏 → 命令收藏"
+    },
+    {
+      "id": "历史命令",
+      "note": "终端工具条 → 历史命令"
+    }
+  ],
+  "runs": [
+    {
+      "run": 1,
+      "steps": [
+        {
+          "step": 0,
+          "action": "(初始)",
+          "note": "加载后静止",
+          "fps": {
+            "hash": "f443677c",
+            "nodes": 230
+          },
+          "quietMs": 355,
+          "stable": true,
+          "changed": null,
+          "drift": {
+            "checked": 38,
+            "broken": [],
+            "ambiguous": []
+          }
+        },
+        {
+          "step": 1,
+          "action": "仪表盘",
+          "note": "活动栏 → 仪表盘",
+          "selector": "div[title=\"仪表盘\"]",
+          "clickOk": true,
+          "clickAt": {
+            "x": 24,
+            "y": 108
+          },
+          "quietMs": 351,
+          "stable": true,
+          "fps": {
+            "hash": "9854cdc0",
+            "nodes": 224
+          },
+          "changed": true,
+          "drift": {
+            "checked": 38,
+            "broken": [
+              "新建文件",
+              "新建目录"
+            ],
+            "ambiguous": []
+          }
+        },
+        {
+          "step": 2,
+          "action": "文件资源管理器",
+          "note": "活动栏 → 文件资源管理器",
+          "selector": "div[title=\"文件资源管理器\"]",
+          "clickOk": true,
+          "clickAt": {
+            "x": 24,
+            "y": 150
+          },
+          "quietMs": 324,
+          "stable": true,
+          "fps": {
+            "hash": "caea2e9e",
+            "nodes": 230
+          },
+          "changed": true,
+          "drift": {
+            "checked": 38,
+            "broken": [],
+            "ambiguous": []
+          }
+        },
+        {
+          "step": 3,
+          "action": "服务器列表",
+          "note": "活动栏 → 服务器列表",
+          "selector": "div[title=\"服务器列表\"]",
+          "clickOk": true,
+          "clickAt": {
+            "x": 24,
+            "y": 192
+          },
+          "quietMs": 324,
+          "stable": true,
+          "fps": {
+            "hash": "416b8ca4",
+            "nodes": 238
+          },
+          "changed": true,
+          "drift": {
+            "checked": 38,
+            "broken": [
+              "新建文件",
+              "新建目录",
+              "刷新"
+            ],
+            "ambiguous": []
+          }
+        },
+        {
+          "step": 4,
+          "action": "命令收藏-2",
+          "note": "活动栏 → 命令收藏",
+          "selector": "div[title=\"命令收藏\"]",
+          "clickOk": true,
+          "clickAt": {
+            "x": 24,
+            "y": 234
+          },
+          "quietMs": 342,
+          "stable": true,
+          "fps": {
+            "hash": "2d17c3d8",
+            "nodes": 228
+          },
+          "changed": true,
+          "drift": {
+            "checked": 38,
+            "broken": [
+              "新建文件",
+              "新建目录",
+              "刷新"
+            ],
+            "ambiguous": []
+          }
+        },
+        {
+          "step": 5,
+          "action": "历史命令",
+          "note": "终端工具条 → 历史命令",
+          "selector": "button[title=\"历史命令\"]",
+          "clickOk": true,
+          "clickAt": {
+            "x": 765,
+            "y": 93
+          },
+          "quietMs": 338,
+          "stable": true,
+          "fps": {
+            "hash": "99f42261",
+            "nodes": 218
+          },
+          "changed": true,
+          "drift": {
+            "checked": 38,
+            "broken": [
+              "新建文件",
+              "新建目录",
+              "刷新"
+            ],
+            "ambiguous": []
+          }
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "steps": [
+        {
+          "step": 0,
+          "action": "(初始)",
+          "note": "加载后静止",
+          "fps": {
+            "hash": "f443677c",
+            "nodes": 230
+          },
+          "quietMs": 340,
+          "stable": true,
+          "changed": null,
+          "drift": {
+            "checked": 38,
+            "broken": [],
+            "ambiguous": []
+          }
+        },
+        {
+          "step": 1,
+          "action": "仪表盘",
+          "note": "活动栏 → 仪表盘",
+          "selector": "div[title=\"仪表盘\"]",
+          "clickOk": true,
+          "clickAt": {
+            "x": 24,
+            "y": 108
+          },
+          "quietMs": 348,
+          "stable": true,
+          "fps": {
+            "hash": "9854cdc0",
+            "nodes": 224
+          },
+          "changed": true,
+          "drift": {
+            "checked": 38,
+            "broken": [
+              "新建文件",
+              "新建目录"
+            ],
+            "ambiguous": []
+          }
+        },
+        {
+          "step": 2,
+          "action": "文件资源管理器",
+          "note": "活动栏 → 文件资源管理器",
+          "selector": "div[title=\"文件资源管理器\"]",
+          "clickOk": true,
+          "clickAt": {
+            "x": 24,
+            "y": 150
+          },
+          "quietMs": 334,
+          "stable": true,
+          "fps": {
+            "hash": "caea2e9e",
+            "nodes": 230
+          },
+          "changed": true,
+          "drift": {
+            "checked": 38,
+            "broken": [],
+            "ambiguous": []
+          }
+        },
+        {
+          "step": 3,
+          "action": "服务器列表",
+          "note": "活动栏 → 服务器列表",
+          "selector": "div[title=\"服务器列表\"]",
+          "clickOk": true,
+          "clickAt": {
+            "x": 24,
+            "y": 192
+          },
+          "quietMs": 348,
+          "stable": true,
+          "fps": {
+            "hash": "416b8ca4",
+            "nodes": 238
+          },
+          "changed": true,
+          "drift": {
+            "checked": 38,
+            "broken": [
+              "新建文件",
+              "新建目录",
+              "刷新"
+            ],
+            "ambiguous": []
+          }
+        },
+        {
+          "step": 4,
+          "action": "命令收藏-2",
+          "note": "活动栏 → 命令收藏",
+          "selector": "div[title=\"命令收藏\"]",
+          "clickOk": true,
+          "clickAt": {
+            "x": 24,
+            "y": 234
+          },
+          "quietMs": 346,
+          "stable": true,
+          "fps": {
+            "hash": "2d17c3d8",
+            "nodes": 228
+          },
+          "changed": true,
+          "drift": {
+            "checked": 38,
+            "broken": [
+              "新建文件",
+              "新建目录",
+              "刷新"
+            ],
+            "ambiguous": []
+          }
+        },
+        {
+          "step": 5,
+          "action": "历史命令",
+          "note": "终端工具条 → 历史命令",
+          "selector": "button[title=\"历史命令\"]",
+          "clickOk": true,
+          "clickAt": {
+            "x": 765,
+            "y": 93
+          },
+          "quietMs": 359,
+          "stable": true,
+          "fps": {
+            "hash": "99f42261",
+            "nodes": 218
+          },
+          "changed": true,
+          "drift": {
+            "checked": 38,
+            "broken": [
+              "新建文件",
+              "新建目录",
+              "刷新"
+            ],
+            "ambiguous": []
+          }
+        }
+      ]
+    }
+  ],
+  "cmp": [
+    {
+      "step": 0,
+      "action": "(初始)",
+      "hashA": "f443677c",
+      "hashB": "f443677c",
+      "match": true
+    },
+    {
+      "step": 1,
+      "action": "仪表盘",
+      "hashA": "9854cdc0",
+      "hashB": "9854cdc0",
+      "match": true
+    },
+    {
+      "step": 2,
+      "action": "文件资源管理器",
+      "hashA": "caea2e9e",
+      "hashB": "caea2e9e",
+      "match": true
+    },
+    {
+      "step": 3,
+      "action": "服务器列表",
+      "hashA": "416b8ca4",
+      "hashB": "416b8ca4",
+      "match": true
+    },
+    {
+      "step": 4,
+      "action": "命令收藏-2",
+      "hashA": "2d17c3d8",
+      "hashB": "2d17c3d8",
+      "match": true
+    },
+    {
+      "step": 5,
+      "action": "历史命令",
+      "hashA": "99f42261",
+      "hashB": "99f42261",
+      "match": true
+    }
+  ],
+  "verdict": {
+    "anyChange": true,
+    "allQuiet": true,
+    "allMatch": true
+  }
+}

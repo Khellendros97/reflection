@@ -1,0 +1,2107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DemoStudio · 交互原型 v0.1</title>
+<style>
+/* ============================================================
+   DemoStudio 交互原型
+   目的：验证「导入 → 采集 → 录制 → 编排 → 出片」的交互逻辑
+   单文件、零依赖、可 file:// 直接打开
+   ============================================================ */
+:root{
+  --bg:#0b0d11; --panel:#12151b; --panel2:#171b23; --panel3:#1e232d;
+  --line:#262c38; --line2:#333b4a;
+  --text:#e7eaf0; --dim:#8b93a5; --dim2:#5f6878;
+  --accent:#4f7cff; --accent2:#8b5cf6; --ok:#2ecc71; --warn:#f5a623; --err:#ff5c5c; --rec:#ff3b30;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--sans);
+  font-size:13px;overflow:hidden;user-select:none;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;font-size:inherit;color:inherit;background:none;border:none;cursor:pointer}
+button:disabled{opacity:.4;cursor:not-allowed}
+
+/* ---------- 布局骨架 ---------- */
+.app{display:flex;flex-direction:column;height:100vh}
+
+.topbar{
+  height:46px;flex:none;display:flex;align-items:center;gap:14px;
+  padding:0 12px;background:var(--panel);border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:8px;font-weight:600;letter-spacing:.2px}
+.brand .mark{
+  width:20px;height:20px;border-radius:5px;flex:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+}
+.brand small{color:var(--dim2);font-weight:400;font-size:11px}
+
+.stepper{display:flex;align-items:center;gap:2px;margin-left:8px}
+.step{
+  display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:6px;
+  color:var(--dim);font-size:12px;transition:.15s;white-space:nowrap;
+}
+.step:hover{background:var(--panel3);color:var(--text)}
+.step.on{background:rgba(79,124,255,.14);color:#a9c0ff}
+.step.done{color:var(--ok)}
+.step .num{
+  width:16px;height:16px;border-radius:50%;flex:none;display:grid;place-items:center;
+  font-size:10px;border:1px solid currentColor;
+}
+.step.done .num{background:var(--ok);border-color:var(--ok);color:#04170b}
+.step-sep{color:var(--dim2);font-size:10px}
+
+.top-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.btn{
+  padding:6px 12px;border-radius:6px;background:var(--panel3);
+  border:1px solid var(--line2);font-size:12px;transition:.15s;white-space:nowrap;
+}
+.btn:hover:not(:disabled){background:#252b37;border-color:#414b5e}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover:not(:disabled){background:#3f6cf0}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--dim)}
+.btn.ghost:hover:not(:disabled){background:var(--panel3);color:var(--text)}
+.btn.danger{background:rgba(255,59,48,.15);border-color:rgba(255,59,48,.5);color:#ff8a80}
+
+.body{flex:1;display:flex;min-height:0}
+.left-panel{width:236px;flex:none;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column}
+.center{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg)}
+.right-panel{width:336px;flex:none;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column}
+
+.p-head{
+  height:32px;flex:none;display:flex;align-items:center;gap:6px;padding:0 10px;
+  font-size:11px;font-weight:600;color:var(--dim);letter-spacing:.4px;
+  border-bottom:1px solid var(--line);text-transform:uppercase;
+}
+.p-body{flex:1;overflow:auto;padding:8px}
+.p-body::-webkit-scrollbar{width:8px}
+.p-body::-webkit-scrollbar-thumb{background:#2b323f;border-radius:4px}
+.p-body::-webkit-scrollbar-track{background:transparent}
+
+/* ---------- 舞台 ---------- */
+.stage-toolbar{
+  height:34px;flex:none;display:flex;align-items:center;gap:8px;padding:0 10px;
+  background:var(--panel);border-bottom:1px solid var(--line);font-size:12px;
+}
+.chip{
+  padding:3px 8px;border-radius:4px;background:var(--panel3);color:var(--dim);
+  font-size:11px;border:1px solid var(--line);white-space:nowrap;
+}
+.chip.on{background:rgba(79,124,255,.16);color:#a9c0ff;border-color:rgba(79,124,255,.4)}
+.chip.rec{background:rgba(255,59,48,.16);color:#ff8a80;border-color:rgba(255,59,48,.45)}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:1px}
+
+.stage-wrap{flex:1;display:grid;place-items:center;min-height:0;padding:14px;position:relative}
+.stage{position:relative;background:#05070a;border-radius:8px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.6),0 0 0 1px var(--line)}
+.canvas{width:1920px;height:1080px;position:absolute;left:0;top:0;transform-origin:0 0}
+.cam{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+
+.transport{
+  height:38px;flex:none;display:flex;align-items:center;gap:10px;padding:0 12px;
+  background:var(--panel);border-top:1px solid var(--line);
+}
+.tc{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.tc b{color:var(--text);font-weight:500}
+
+/* ---------- 时间线 ---------- */
+.timeline-dock{
+  height:216px;flex:none;background:var(--panel);border-top:1px solid var(--line);
+  display:flex;flex-direction:column;
+}
+.tl-head{
+  height:30px;flex:none;display:flex;align-items:center;gap:8px;padding:0 10px;
+  border-bottom:1px solid var(--line);font-size:11px;color:var(--dim);
+}
+.tl-main{flex:1;display:flex;min-height:0}
+.tl-gutter{width:104px;flex:none;border-right:1px solid var(--line);padding-top:22px}
+.tk-label{
+  height:var(--h);display:flex;align-items:center;gap:6px;padding:0 10px;
+  font-size:11px;color:var(--dim);border-bottom:1px solid #1b202a;
+}
+.tk-label .sw{width:8px;height:8px;border-radius:2px;flex:none}
+.tl-scroll{flex:1;overflow:hidden;position:relative}
+.tl-inner{position:relative;height:100%;min-width:100%}
+
+.ruler{
+  height:22px;position:sticky;top:0;z-index:6;background:var(--panel);
+  border-bottom:1px solid var(--line);cursor:pointer;
+}
+.tick{position:absolute;top:0;bottom:0;border-left:1px solid #222834}
+.tick span{position:absolute;left:3px;top:4px;font-size:9px;color:var(--dim2);font-family:var(--mono)}
+
+.track{height:var(--h);position:relative;border-bottom:1px solid #1b202a}
+.track:nth-child(even){background:rgba(255,255,255,.012)}
+
+.blk{
+  position:absolute;top:3px;bottom:3px;border-radius:4px;overflow:hidden;
+  display:flex;align-items:center;padding:0 7px;font-size:11px;white-space:nowrap;
+  cursor:grab;border:1px solid transparent;transition:border-color .12s;
+}
+.blk:hover{border-color:rgba(255,255,255,.35)}
+.blk.sel{border-color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.5)}
+.blk:active{cursor:grabbing}
+.blk.act{background:linear-gradient(180deg,#2a4a9e,#223d84);color:#cddcff}
+.blk.cap{background:linear-gradient(180deg,#6b4bb8,#573c99);color:#e6dcff}
+.blk.aud{background:linear-gradient(180deg,#1f6b4a,#17553b);color:#c6f0dd}
+.blk.type{background:linear-gradient(180deg,#8a5a1f,#6d4718);color:#ffe6c2}
+
+.kf{
+  position:absolute;top:50%;width:11px;height:11px;margin:-5.5px 0 0 -5.5px;
+  background:#4f7cff;border:1.5px solid #b9caff;transform:rotate(45deg);
+  cursor:grab;border-radius:2px;
+}
+.kf:hover{background:#7d9dff}
+.kf.sel{background:#fff;border-color:#fff}
+
+.playhead{position:absolute;top:0;bottom:0;width:1px;background:#ff5c5c;z-index:8;pointer-events:none}
+.playhead::before{
+  content:'';position:absolute;top:0;left:-5px;width:11px;height:11px;
+  background:#ff5c5c;clip-path:polygon(0 0,100% 0,50% 100%);
+}
+
+/* ---------- 右面板：AI 对话 ---------- */
+.chat-head{
+  height:34px;flex:none;display:flex;align-items:center;gap:7px;padding:0 10px;
+  border-bottom:1px solid var(--line);font-size:12px;font-weight:600;
+}
+.chat-head .spark{
+  width:16px;height:16px;border-radius:4px;flex:none;display:grid;place-items:center;font-size:10px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;
+}
+.chat-head .cnt{
+  margin-left:2px;font-size:9px;line-height:14px;padding:0 5px;border-radius:8px;
+  background:var(--err);color:#fff;font-weight:500;
+}
+.chat-head .cnt.w{background:var(--warn);color:#2a1a00}
+.chat-head .spacer{flex:1}
+
+.msg{margin-bottom:12px;font-size:12.5px;line-height:1.65}
+.msg .who{font-size:10px;color:var(--dim2);margin-bottom:4px;letter-spacing:.3px}
+.msg .mtext{color:#cfd6e2}
+.msg .mtext b{color:#fff;font-weight:600}
+.msg .mtext .dim{color:var(--dim)}
+/* 注意：类名必须带前缀。
+   舞台里那套假 AIShell 界面已有 .bubble（position:absolute），
+   若这里也叫 .bubble，聊天消息会塌成一行、气泡浮到面板外。
+   这正是 incentive-promo/real-ui.css 用 .rui 前缀解决过的同一类问题。 */
+.msg.me .cbub{
+  background:rgba(79,124,255,.14);border:1px solid rgba(79,124,255,.32);
+  border-radius:9px;padding:8px 11px;color:#dbe6ff;
+}
+.msg.ai .cbub{
+  background:var(--panel2);border:1px solid var(--line);
+  border-left:2px solid var(--line2);border-radius:9px;padding:9px 11px;
+}
+.msg.ai.ok .cbub{border-left-color:var(--ok)}
+.msg.ai.warn .cbub{border-left-color:var(--warn)}
+.msg.ai.error .cbub{border-left-color:var(--err)}
+.msg.ai.info .cbub{border-left-color:var(--accent)}
+.mref{
+  display:inline-block;background:rgba(79,124,255,.2);color:#a9c0ff;
+  border:1px solid rgba(79,124,255,.4);border-radius:4px;
+  padding:0 5px;margin:0 3px 3px 0;font-size:11px;font-family:var(--mono);
+}
+.macts{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.mini{
+  padding:4px 10px;font-size:11px;border-radius:5px;
+  background:var(--panel3);border:1px solid var(--line2);color:#c3cbd8;transition:.12s;
+}
+.mini:hover{background:#293040;border-color:#465268;color:#fff}
+.mini.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.mini.primary:hover{background:#3f6cf0}
+
+/* 输入区 */
+.composer{flex:none;border-top:1px solid var(--line);padding:9px 10px 10px;background:var(--panel)}
+.refbar{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px}
+.refbar:empty{display:none}
+.ref{
+  display:inline-flex;align-items:center;gap:5px;font-size:11px;font-family:var(--mono);
+  background:rgba(79,124,255,.16);border:1px solid rgba(79,124,255,.4);
+  color:#a9c0ff;border-radius:5px;padding:2px 4px 2px 7px;
+}
+.ref button{color:#7d95c9;font-size:12px;line-height:1;padding:0 2px}
+.ref button:hover{color:#fff}
+.inputrow{display:flex;gap:7px;align-items:flex-end}
+.inputrow textarea{
+  flex:1;height:58px;resize:none;background:#0c0f14;border:1px solid var(--line2);
+  border-radius:8px;color:var(--text);padding:8px 10px;font-family:inherit;font-size:12.5px;
+  line-height:1.5;outline:none;transition:.15s;
+}
+.inputrow textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(79,124,255,.16)}
+.inputrow textarea::placeholder{color:var(--dim2)}
+.sendbtn{
+  width:34px;height:34px;border-radius:8px;background:var(--accent);color:#fff;
+  display:grid;place-items:center;font-size:15px;flex:none;transition:.15s;
+}
+.sendbtn:hover{background:#3f6cf0}
+.quick{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.quick button{
+  font-size:11px;padding:3px 8px;border-radius:11px;color:var(--dim);
+  background:var(--panel2);border:1px solid var(--line);transition:.12s;
+}
+.quick button:hover{color:#a9c0ff;border-color:rgba(79,124,255,.45);background:rgba(79,124,255,.09)}
+.ai-out{font-family:var(--mono);font-size:11px;color:var(--dim2);margin-top:8px;line-height:1.7}
+
+/* ---------- 列表项 ---------- */
+.item{
+  padding:7px 9px;border-radius:6px;margin-bottom:4px;font-size:12px;
+  border:1px solid transparent;cursor:pointer;transition:.12s;
+}
+.item:hover{background:var(--panel2)}
+.item.on{background:rgba(79,124,255,.14);border-color:rgba(79,124,255,.4)}
+.item .t1{display:flex;align-items:center;gap:6px}
+.item .t2{color:var(--dim);font-size:11px;margin-top:3px;font-family:var(--mono)}
+.item .tag{
+  margin-left:auto;font-size:9px;padding:1px 5px;border-radius:3px;
+  background:var(--panel3);color:var(--dim2);font-family:var(--sans);
+}
+.item .tag.ok{background:rgba(46,204,113,.16);color:#7ee2a8}
+.item .tag.auto{background:rgba(139,92,246,.18);color:#c4b0ff}
+
+.empty{padding:22px 12px;text-align:center;color:var(--dim2);font-size:12px;line-height:1.7}
+.empty b{color:var(--dim);font-weight:500}
+
+/* ---------- 检查项 ---------- */
+.lint{padding:8px 9px;border-radius:6px;margin-bottom:6px;font-size:12px;line-height:1.55;cursor:pointer;border-left:2px solid}
+.lint:hover{background:var(--panel2)}
+.lint.error{background:rgba(255,92,92,.08);border-color:var(--err)}
+.lint.warn{background:rgba(245,166,35,.08);border-color:var(--warn)}
+.lint.info{background:rgba(79,124,255,.08);border-color:var(--accent)}
+.lint .lv{font-size:10px;font-weight:600;letter-spacing:.4px;text-transform:uppercase}
+.lint.error .lv{color:var(--err)} .lint.warn .lv{color:var(--warn)} .lint.info .lv{color:#a9c0ff}
+.lint .fix{color:var(--dim2);font-size:11px;margin-top:3px}
+
+/* ---------- 覆盖层（导入/采集/渲染）—— 盖在整个中央区域，不塞进 16:9 舞台 ---------- */
+.ov-host{position:absolute;inset:0;z-index:20;pointer-events:none}
+.overlay{
+  position:absolute;inset:0;display:grid;place-items:center;padding:18px;
+  background:rgba(6,8,12,.88);backdrop-filter:blur(4px);pointer-events:auto;
+}
+.card{
+  width:min(540px,100%);max-height:100%;overflow:auto;background:var(--panel);
+  border:1px solid var(--line2);border-radius:12px;padding:22px;
+  box-shadow:0 24px 70px rgba(0,0,0,.7);
+}
+.card h2{font-size:16px;font-weight:600;margin-bottom:5px}
+.card .sub{color:var(--dim);font-size:12px;line-height:1.65;margin-bottom:16px}
+.card .row{display:flex;gap:8px;margin-top:16px;align-items:center}
+.card .row .spacer{flex:1}
+
+.drop{
+  border:1.5px dashed var(--line2);border-radius:9px;padding:22px;text-align:center;
+  color:var(--dim);font-size:12px;line-height:1.7;transition:.15s;cursor:pointer;
+}
+.drop:hover{border-color:var(--accent);background:rgba(79,124,255,.05);color:var(--text)}
+.drop .big{font-size:26px;margin-bottom:7px;opacity:.6}
+
+.prog{height:5px;background:var(--panel3);border-radius:3px;overflow:hidden;margin:7px 0}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:width .22s}
+
+.steps-list{font-size:12px}
+.sl{display:flex;align-items:center;gap:9px;padding:6px 0;color:var(--dim2)}
+.sl.run{color:var(--text)}
+.sl.ok{color:var(--dim)}
+.sl .ic{width:15px;flex:none;text-align:center;font-size:11px}
+.sl .nm{flex:1}
+.sl .tm{font-family:var(--mono);font-size:10px;color:var(--dim2)}
+.sl.ok .ic{color:var(--ok)}
+.sl.run .ic{color:var(--accent)}
+
+.kv{display:flex;justify-content:space-between;padding:6px 0;font-size:12px;border-bottom:1px solid var(--line)}
+.kv:last-child{border:none}
+.kv .k{color:var(--dim)}
+.kv .v{font-family:var(--mono);font-size:11px}
+.kv .v.ok{color:var(--ok)}
+
+.result-hd{display:flex;align-items:center;gap:9px;margin-bottom:14px}
+.result-hd .ok-ic{
+  width:26px;height:26px;border-radius:50%;background:rgba(46,204,113,.15);
+  color:var(--ok);display:grid;place-items:center;font-size:14px;flex:none;
+}
+
+/* ---------- 提示气泡 ---------- */
+.hint{
+  position:absolute;left:12px;top:12px;z-index:15;max-width:430px;
+  background:rgba(18,21,27,.94);border:1px solid var(--line2);border-left:2px solid var(--accent);
+  border-radius:7px;padding:9px 12px;font-size:12px;line-height:1.6;color:var(--dim);
+  box-shadow:0 8px 24px rgba(0,0,0,.5);
+}
+.hint b{color:var(--text);font-weight:500}
+.hint .k{
+  font-family:var(--mono);font-size:11px;background:var(--panel3);
+  padding:1px 5px;border-radius:3px;color:#a9c0ff;
+}
+.hint.rec{border-left-color:var(--rec)}
+
+/* ---------- 录制专注模式：隐藏一切，只留场景 / 停止录制 / 折叠时间轴 ---------- */
+body.recording .left-panel,
+body.recording .right-panel,
+body.recording .brand,
+body.recording .stepper,
+body.recording .top-actions,
+body.recording .stage-toolbar,
+body.recording .transport{display:none}
+body.recording .stage-wrap{padding:10px}
+
+.rec-bar{display:none;align-items:center;gap:16px;width:100%}
+body.recording .rec-bar{display:flex}
+.recdot{
+  width:9px;height:9px;border-radius:50%;background:var(--rec);flex:none;
+  animation:pulse 1.1s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(255,59,48,.55)}
+  50%{opacity:.5;box-shadow:0 0 0 7px rgba(255,59,48,0)}
+}
+.rec-label{color:#ff8a80;font-weight:600;letter-spacing:.6px;font-size:12px}
+.rec-time{font-family:var(--mono);font-size:16px;color:var(--text);min-width:78px;font-variant-numeric:tabular-nums}
+.rec-count{color:var(--dim);font-size:12px}
+.rec-stop{padding:8px 20px;font-size:13px}
+
+/* 折叠时间轴：只留一条事件带 */
+body.tl-compact .timeline-dock{height:76px}
+body.tl-compact .tl-head{display:none}
+body.tl-compact .tl-gutter{display:none}
+body.tl-compact .ruler{height:18px}
+body.tl-compact .tick span{font-size:8px;top:2px}
+
+/* ---------- 舞台内的应用窗口（设计空间 1440×900） ---------- */
+.win{position:absolute;left:0;top:0;width:1440px;height:900px;background:#0e1116;overflow:hidden;font-size:13px}
+.lay{position:absolute}
+.l-top{left:0;top:0;width:1440px;height:40px;background:#161a22;border-bottom:1px solid #232936}
+.l-act{left:0;top:40px;width:48px;height:834px;background:#12151b;border-right:1px solid #232936}
+.l-side{left:48px;top:40px;width:260px;height:834px;background:#141821;border-right:1px solid #232936}
+.l-main{left:308px;top:40px;width:792px;height:834px;background:#0e1116}
+.l-ai{left:1100px;top:40px;width:340px;height:834px;background:#12151b;border-left:1px solid #232936}
+.l-status{left:0;top:874px;width:1440px;height:26px;background:#161a22;border-top:1px solid #232936}
+
+.tx{position:absolute;color:#c8cfdb}
+.tx.dim{color:#6b7484}
+.tx.mono{font-family:var(--mono)}
+.tx.tiny{font-size:11px}
+.tx.bold{font-weight:600;color:#e7eaf0}
+
+.box{position:absolute;border-radius:6px;border:1px solid #2b3240;background:#171c25}
+.box.flat{background:#1a1f29}
+.box.on{border-color:#4f7cff;background:rgba(79,124,255,.1)}
+.icon{position:absolute;width:24px;height:24px;border-radius:6px;display:grid;place-items:center;color:#6b7484;font-size:12px}
+.icon.on{background:rgba(79,124,255,.16);color:#8fb0ff}
+.dot3{position:absolute;width:5px;height:5px;border-radius:50%;background:#4a5364}
+
+/* 终端 */
+.term-line{position:absolute;font-family:var(--mono);font-size:13px;color:#c8cfdb;white-space:pre;line-height:22px}
+.term-line.p{color:#5fd39a}
+.caret{display:inline-block;width:8px;height:15px;background:#c8cfdb;vertical-align:-3px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* AI 面板 */
+.bubble{position:absolute;border-radius:9px;padding:9px 12px;font-size:12.5px;line-height:1.6}
+.bubble.me{background:#2a3f7a;color:#dbe6ff}
+.bubble.ai{background:#1b2029;color:#c8cfdb;border:1px solid #262d3a}
+.aibox{position:absolute;border-radius:9px;background:#0c0f14;border:1px solid #2b3240}
+.aibox.focus{border-color:#4f7cff;box-shadow:0 0 0 2px rgba(79,124,255,.18)}
+
+/* 锚点提示 */
+.hot{position:absolute;border-radius:5px;border:1.5px dashed rgba(79,124,255,.5);pointer-events:none}
+.hot.hi{border-color:#8fb0ff;background:rgba(79,124,255,.14);border-style:solid}
+.hot .lbl{
+  position:absolute;top:-17px;left:-1px;background:#4f7cff;color:#fff;
+  font-size:10px;font-family:var(--mono);padding:1px 5px;border-radius:3px;white-space:nowrap;
+}
+
+/* 指针 / 字幕 / 覆盖层（画布空间，不随相机缩放） */
+.cursor{position:absolute;pointer-events:none;z-index:60;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6))}
+.ripple{
+  position:absolute;border-radius:50%;border:3px solid #4f7cff;pointer-events:none;z-index:59;
+}
+.hlring{
+  position:absolute;border-radius:8px;border:3px solid #4f7cff;pointer-events:none;z-index:55;
+  box-shadow:0 0 0 4px rgba(79,124,255,.18),0 0 26px rgba(79,124,255,.5);
+}
+.caption{
+  position:absolute;left:50%;transform:translateX(-50%);bottom:52px;z-index:50;
+  background:rgba(0,0,0,.62);padding:10px 22px;border-radius:8px;
+  font-size:26px;color:#fff;letter-spacing:.5px;white-space:nowrap;
+  text-shadow:0 2px 8px rgba(0,0,0,.8);border-left:3px solid var(--accent);
+}
+.vignette{
+  position:absolute;inset:0;z-index:40;pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 58%,rgba(0,0,0,.3) 100%);
+}
+.recborder{position:absolute;inset:0;z-index:70;pointer-events:none;border:3px solid var(--rec);border-radius:8px;opacity:.85}
+
+/* 迷你时间轴（原型自检用） */
+.sr{display:flex;align-items:center;gap:6px;font-size:11px;padding:4px 0;color:var(--dim)}
+.sr .k{font-family:var(--mono);color:#a9c0ff}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ================= 顶栏 ================= -->
+  <header class="topbar">
+    <div class="brand"><div class="mark"></div>DemoStudio <small>交互原型 v0.1</small></div>
+
+    <nav class="stepper" id="stepper">
+      <button class="step" data-step="import"><span class="num">1</span>导入项目</button>
+      <span class="step-sep">›</span>
+      <button class="step" data-step="capture"><span class="num">2</span>还原场景</button>
+      <span class="step-sep">›</span>
+      <button class="step" data-step="record"><span class="num">3</span>录制操作</button>
+      <span class="step-sep">›</span>
+      <button class="step" data-step="director"><span class="num">4</span>编排</button>
+      <span class="step-sep">›</span>
+      <button class="step" data-step="render"><span class="num">5</span>出片</button>
+    </nav>
+
+    <div class="top-actions">
+      <button class="btn ghost" id="btn-guide" title="自动走一遍完整流程，便于评审">▶ 走完整流程</button>
+      <button class="btn ghost" id="btn-reset">重置</button>
+      <button class="btn primary" id="btn-export">导出成片</button>
+    </div>
+
+    <!-- 录制专注模式顶栏：只剩时间码、动作计数、停止 -->
+    <div class="rec-bar" id="rec-bar">
+      <span class="recdot"></span>
+      <span class="rec-label">REC</span>
+      <span class="rec-time" id="rec-time">00:00.0</span>
+      <span class="rec-count" id="rec-count">已记录 0 个动作</span>
+      <span style="margin-left:auto"></span>
+      <button class="btn ghost" id="btn-tl-toggle">展开时间轴 ⌃</button>
+      <button class="btn danger rec-stop" id="btn-rec-stop">■ 停止录制</button>
+    </div>
+  </header>
+
+  <div class="body">
+    <!-- ================= 左栏 ================= -->
+    <aside class="left-panel">
+      <div class="p-head">场景与锚点 <span style="margin-left:auto;color:var(--dim2);font-weight:400" id="anchor-count">—</span></div>
+      <div class="p-body" id="left-body"></div>
+    </aside>
+
+    <!-- ================= 中栏：舞台 ================= -->
+    <main class="center">
+      <div class="stage-toolbar">
+        <span class="chip" id="chip-source">未导入</span>
+        <span class="chip" id="chip-det">确定性：未加固</span>
+        <span class="chip" id="chip-state">状态：空闲</span>
+        <span style="margin-left:auto"></span>
+        <button class="btn ghost" id="btn-hotspots" title="显示/隐藏锚点热区">锚点热区</button>
+        <button class="btn" id="btn-record">● 录制</button>
+      </div>
+
+      <div class="stage-wrap" id="stage-wrap">
+        <div class="stage" id="stage">
+          <div class="canvas" id="canvas">
+            <div class="cam" id="cam">
+              <div class="win" id="win"></div>
+              <div id="hotspots"></div>
+            </div>
+            <div id="overlays"></div>
+          </div>
+        </div>
+        <div id="stage-overlay" class="ov-host"></div>
+        <div class="hint" id="hint"></div>
+      </div>
+
+      <div class="transport">
+        <button class="btn ghost" id="btn-home" title="回到第 0 帧">⏮</button>
+        <button class="btn" id="btn-play">▶ 播放</button>
+        <span class="tc">帧 <b id="tc-frame">0</b> / <b id="tc-total">300</b></span>
+        <span class="tc">· <b id="tc-sec">0.00</b>s</span>
+        <span class="tc">· 30 fps · 1920×1080</span>
+        <span style="margin-left:auto"></span>
+        <span class="tc" id="tc-cam">相机 1.00×</span>
+      </div>
+    </main>
+
+    <!-- ================= 右栏：AI 对话（取代属性/检查/事件面板） ================= -->
+    <aside class="right-panel">
+      <div class="chat-head">
+        <span class="spark">✦</span>AI 导演
+        <span class="cnt" id="chat-cnt" style="display:none">0</span>
+        <span class="spacer"></span>
+        <button class="btn ghost" id="btn-chat-clear" style="padding:3px 8px;font-size:11px">清空</button>
+      </div>
+      <div class="p-body" id="chat-body"></div>
+      <div class="composer">
+        <div class="refbar" id="refbar"></div>
+        <div class="inputrow">
+          <textarea id="ai-input" placeholder="点画面里的元素，或直接说你想怎么改…"></textarea>
+          <button class="sendbtn" id="btn-chat-send" title="发送（Enter）">↑</button>
+        </div>
+        <div class="quick" id="quick"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ================= 时间线 ================= -->
+  <footer class="timeline-dock">
+    <div class="tl-head">
+      <span id="tl-title">时间线</span>
+      <span class="tc" id="tl-stat" style="color:var(--dim2)"></span>
+      <span style="margin-left:auto"></span>
+      <button class="btn ghost" id="btn-ai" title="根据动作自动生成运镜、指针轨迹与字幕">✦ AI 一键展开</button>
+      <button class="btn ghost" id="btn-add-cap">＋ 字幕</button>
+    </div>
+    <div class="tl-main">
+      <div class="tl-gutter" id="tl-gutter"></div>
+      <div class="tl-scroll" id="tl-scroll">
+        <div class="tl-inner" id="tl-inner"></div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script>
+/* ==========================================================================
+   0. 常量与几何：设计空间 1440×900 → 画布 1920×1080
+   ========================================================================== */
+const FPS = 30;
+const DESIGN = { w: 1440, h: 900 };
+const CANVAS = { w: 1920, h: 1080 };
+const MIN_CAPTION_GAP = 16;   // 沿用 video/ 的教训
+const HOLD_BEFORE_POINTER = 8;
+const RIPPLE_FRAMES = 14;
+
+/* 锚点表：坐标即「真实 DOM 元素在设计空间中的矩形」
+   —— 原型里 DOM 也按同一组坐标绝对定位，保证指针必然落准 */
+const ANCHORS = [
+  { id:'top-settings', label:'设置',      rect:{x:1290,y:8,  w:48, h:24}, role:'button' },
+  { id:'act-servers',  label:'服务器',    rect:{x:12,  y:88, w:24, h:24}, role:'tab'    },
+  { id:'act-commands', label:'命令收藏',  rect:{x:12,  y:126,w:24, h:24}, role:'tab'    },
+  { id:'server-card',  label:'服务器卡片',rect:{x:56,  y:120,w:244,h:86}, role:'button' },
+  { id:'ssh-btn',      label:'SSH 连接',  rect:{x:272, y:150,w:24, h:24}, role:'button' },
+  { id:'new-proj',     label:'新建项目',  rect:{x:940, y:116,w:120,h:32}, role:'button' },
+  { id:'ai-input',     label:'AI 输入框', rect:{x:1116,y:782,w:268,h:72}, role:'textbox'},
+  { id:'ai-send',      label:'发送',      rect:{x:1392,y:820,w:36, h:34}, role:'button' },
+  { id:'status-version',label:'版本状态', rect:{x:12,  y:878,w:140,h:18}, role:'status' },
+];
+const anchorById = (id) => ANCHORS.find(a => a.id === id);
+const centerOf   = (id) => { const a = anchorById(id); return a ? { x:a.rect.x + a.rect.w/2, y:a.rect.y + a.rect.h/2 } : { x:720, y:450 }; };
+
+/**
+ * 运镜取景：把相机中心钳制在「窗口仍能铺满画布」的范围内。
+ * 缩放 ≥1.33 时窗口已大于画布，若不对中心做钳制，推近到角落会在画面里露出黑边。
+ * 缩放 0.78 时窗口小于画布（这是刻意保留的浮动构图，给字幕留位置），不做钳制。
+ */
+function focusCam(anchorId, s){
+  const c = centerOf(anchorId);
+  let x = c.x, y = c.y;
+  const nx = (CANVAS.w/2)/s, ny = (CANVAS.h/2)/s;
+  if (DESIGN.w*s >= CANVAS.w) x = Math.min(Math.max(x, nx), DESIGN.w - nx);
+  if (DESIGN.h*s >= CANVAS.h) y = Math.min(Math.max(y, ny), DESIGN.h - ny);
+  return { x, y };
+}
+
+/* ==========================================================================
+   1. 全局状态 —— 唯一的真源，UI 全部由它派生
+   ========================================================================== */
+const S = {
+  step: 'import',
+  imported: false,
+  captured: false,
+  frame: 0,
+  duration: 300,
+  playing: false,
+  recording: false,
+  tlCollapsed: true,      // 录制时时间轴默认折叠成一条事件带
+  showHotspots: true,
+  hoverAnchor: null,
+  selectedAnchor: null,
+  selection: null,        // { track, index }
+  chat: [],               // AI 对话消息
+  refs: [],               // 已引用进输入框的元素/片段
+  lintSaid: null,         // Set：已播报过的问题签名（延迟初始化，避免顶层 new Set 顺序问题）
+  tab: 'lint',
+  events: [],             // 录制产生的事件
+  actions: [],            // 语义动作 { f, kind, anchor, ... }
+  captions: [],
+  camera: [],             // { f, s, x, y }
+  audio: [],
+  cursorPins: [],
+  probe: null,
+  render: null,
+};
+
+const anchorRect = (id) => (anchorById(id) || ANCHORS[0]).rect;
+
+/* ==========================================================================
+   2. 纯函数派生层 —— 对应架构文档 §6.3「状态推导必须是纯函数」
+   ========================================================================== */
+
+/** 分段关键帧插值：沿用 video/src/anim.ts 的 track1 语义（段间缓动、端点钳制） */
+function track(stops, f){
+  if (!stops || !stops.length) return 0;
+  const s = stops.slice().sort((a,b)=>a.f-b.f);
+  if (f <= s[0].f) return s[0].v;
+  const last = s[s.length-1];
+  if (f >= last.f) return last.v;
+  for (let i=0;i<s.length-1;i++){
+    const a=s[i], b=s[i+1];
+    if (f>=a.f && f<=b.f){
+      const t = (f-a.f)/(b.f-a.f||1);
+      const e = t*t*(3-2*t);                    // smoothstep，近似 bezier 缓动
+      return a.v + (b.v-a.v)*e;
+    }
+  }
+  return last.v;
+}
+
+/** 摄像机：{s,x,y}，x/y 为取景框中心（设计空间）
+ *  默认取 1.20×：1440×900 的窗口在此缩放下几乎铺满 1920×1080 画布（1728×1080），
+ *  既看得全、又看得清 —— 录制时需要点得到每一个控件，这个基准比 0.78 那种浮动小窗合适得多。 */
+function cameraAt(f){
+  if (!S.camera.length) return { s:1.2, x:720, y:450 };
+  return { s: track(S.camera.map(k=>({f:k.f,v:k.s})), f),
+           x: track(S.camera.map(k=>({f:k.f,v:k.x})), f),
+           y: track(S.camera.map(k=>({f:k.f,v:k.y})), f) };
+}
+/** 设计空间点 → 画布坐标 */
+const toCanvas = (p, cam) => ({ x:(p.x-cam.x)*cam.s + CANVAS.w/2, y:(p.y-cam.y)*cam.s + CANVAS.h/2 });
+
+/** 指针位置：优先锚点，无锚点时用兜底坐标（对应 anchors.tsx 的 AnchorStop 语义） */
+function cursorAt(f){
+  const pins = S.cursorPins.slice().sort((a,b)=>a.f-b.f);
+  if (!pins.length) return { x:1200, y:800 };
+  const pt = (p) => p.anchor ? centerOf(p.anchor) : { x:p.x, y:p.y };
+  if (f <= pins[0].f) return pt(pins[0]);
+  const last = pins[pins.length-1];
+  if (f >= last.f) return pt(last);
+  for (let i=0;i<pins.length-1;i++){
+    const a=pins[i], b=pins[i+1];
+    if (f>=a.f && f<=b.f){
+      const pa=pt(a), pb=pt(b);
+      const t=(f-a.f)/(b.f-a.f||1);
+      const e=t*t*(3-2*t);
+      return { x:pa.x+(pb.x-pa.x)*e, y:pa.y+(pb.y-pa.y)*e };
+    }
+  }
+  return pt(last);
+}
+
+/**
+ * 应用状态推导：把 0..f 的动作序列重放一遍。
+ * 这正是架构文档 ADR-003「状态由操作重放得到」的可行性验证。
+ */
+function deriveAppState(f){
+  const st = { sidebar:'servers', tab:'welcome', selectedServer:null, modal:null,
+               focus:null, aiText:'', aiSentAt:null, termLines:[], toastAt:null, cmdCount:0 };
+  const acts = S.actions.slice().sort((a,b)=>a.f-b.f);
+  for (const a of acts){
+    if (a.f > f) break;
+    if (a.kind === 'click'){
+      switch(a.anchor){
+        case 'act-servers':  st.sidebar='servers'; break;
+        case 'act-commands': st.sidebar='commands'; st.cmdCount=1; break;
+        case 'server-card':  st.selectedServer='deephaven-dev-01'; break;
+        case 'ssh-btn':
+          st.tab='terminal';
+          st.termLines=[
+            '[devops@deephaven-dev-01 ~]$ uname -a',
+            'Linux deephaven-dev-01 5.15.0-91-generic #101-Ubuntu SMP x86_64 GNU/Linux',
+            '[devops@deephaven-dev-01 ~]$ '
+          ];
+          st.selectedServer='deephaven-dev-01';
+          break;
+        case 'top-settings': st.modal='settings'; st.toastAt=a.f; break;
+        case 'new-proj':     st.modal='newproj';  break;
+        case 'ai-input':     st.focus='ai-input'; break;
+        case 'ai-send':      st.aiSentAt=a.f; st.focus=null; break;
+        case 'status-version': st.toastAt=a.f; break;
+      }
+    }
+    if (a.kind === 'type' && a.anchor === 'ai-input'){
+      const n = Math.max(0, Math.floor((f - a.f) * (a.cps||14) / FPS));
+      st.aiText = a.text.slice(0, n);
+      st.focus = 'ai-input';
+    }
+  }
+  return st;
+}
+
+/* ==========================================================================
+   3. 渲染：舞台应用窗口（全部绝对定位，坐标与锚点表同源）
+   ========================================================================== */
+function appHTML(st){
+  const sel = st.selectedServer;
+  const L = [];
+
+  // --- 背景层
+  L.push('<div class="lay l-top"></div>','<div class="lay l-act"></div>','<div class="lay l-side"></div>');
+  L.push('<div class="lay l-main"></div>','<div class="lay l-ai"></div>','<div class="lay l-status"></div>');
+
+  // --- 顶栏
+  L.push('<div style="position:absolute;left:14px;top:12px;width:16px;height:16px;border-radius:4px;background:linear-gradient(135deg,#4f7cff,#8b5cf6)"></div>');
+  L.push('<div class="tx bold" style="left:38px;top:11px;font-size:13px">AIShell</div>');
+  ['项目','设置','账号'].forEach((t,i)=>{
+    const on = (t==='设置' && st.modal==='settings');
+    L.push(`<div class="tx tiny" style="left:${1236+i*54}px;top:14px;color:${on?'#8fb0ff':'#8b93a5'}">${t}</div>`);
+  });
+  [0,1,2].forEach(i=>L.push(`<div class="dot3" style="left:${1404+i*12}px;top:17px"></div>`));
+
+  // --- 活动栏
+  [['',88],['',126],['',164],['',202]].forEach((it,i)=>{
+    const on = (i===1 && st.sidebar==='servers') || (i===2 && st.sidebar==='commands');
+    L.push(`<div class="icon ${on?'on':''}" style="left:12px;top:${it[1]}px">${['▤','▣','◇','⚙'][i]}</div>`);
+  });
+
+  // --- 侧栏
+  L.push(`<div class="tx tiny bold" style="left:56px;top:52px">${st.sidebar==='commands'?'命令收藏':'服务器'}</div>`);
+  if (st.sidebar === 'servers'){
+    const servers = [
+      { n:'deephaven-dev-01', h:'10.21.36.8', y:120 },
+      { n:'order-1',          h:'10.21.36.24', y:216 },
+      { n:'staging-02',       h:'10.21.40.7', y:312 },
+    ];
+    servers.forEach((s,i)=>{
+      const on = sel === s.n;
+      L.push(`<div class="box ${on?'on':''}" style="left:56px;top:${s.y}px;width:244px;height:86px"></div>`);
+      L.push(`<div class="tx tiny bold" style="left:70px;top:${s.y+14}px">${s.n}</div>`);
+      L.push(`<div class="tx tiny mono dim" style="left:70px;top:${s.y+36}px">${s.h}</div>`);
+      L.push(`<div class="tx tiny dim" style="left:70px;top:${s.y+58}px">${['● 在线','● 在线','○ 空闲'][i]}</div>`);
+      if (i===0) L.push('<div class="icon" style="left:272px;top:150px;font-size:11px">⌁</div>');
+    });
+  } else {
+    ['journalctl -u deephaven-worker','df -h','systemctl status nginx'].forEach((c,i)=>{
+      L.push(`<div class="box flat" style="left:56px;top:${120+i*72}px;width:244px;height:62px"></div>`);
+      L.push(`<div class="tx tiny mono" style="left:68px;top:${134+i*72}px">${c}</div>`);
+      L.push(`<div class="tx tiny dim" style="left:68px;top:${154+i*72}px">已用 3 次 · 收藏</div>`);
+    });
+  }
+
+  // --- 主区
+  L.push('<div class="tx tiny" style="left:316px;top:52px;color:#8fb0ff">终端 · deephaven-dev-01</div>');
+  L.push('<div class="tx tiny dim" style="left:520px;top:52px">欢迎</div>');
+  L.push('<div style="position:absolute;left:308px;top:76px;width:792px;height:1px;background:#232936"></div>');
+
+  if (st.tab === 'welcome'){
+    L.push('<div class="tx bold" style="left:340px;top:120px;font-size:20px">开始你的第一个项目</div>');
+    L.push('<div class="tx tiny dim" style="left:340px;top:152px">项目将创建在 Workspace 目录下，可随时切换</div>');
+    L.push('<div class="box" style="left:940px;top:116px;width:120px;height:32px;background:#4f7cff;border-color:#4f7cff"></div>');
+    L.push('<div class="tx tiny" style="left:974px;top:125px;color:#fff">＋ 新建项目</div>');
+    [['本地终端','免配置直接使用'],['云平台 AI','登录后免配置']].forEach((c,i)=>{
+      L.push(`<div class="box flat" style="left:${340+i*372}px;top:200px;width:344px;height:110px"></div>`);
+      L.push(`<div class="tx tiny bold" style="left:${360+i*372}px;top:224px">${c[0]}</div>`);
+      L.push(`<div class="tx tiny dim" style="left:${360+i*372}px;top:250px">${c[1]}</div>`);
+    });
+  } else {
+    const lines = st.termLines.length ? st.termLines : ['[devops@deephaven-dev-01 ~]$ '];
+    lines.forEach((l,i)=>{
+      const prompt = l.includes('$');
+      L.push(`<div class="term-line ${prompt?'p':''}" style="left:324px;top:${92+i*22}px">${l}${i===lines.length-1?'<span class="caret"></span>':''}</div>`);
+    });
+    if (lines.length > 1){
+      L.push(`<div class="tx tiny dim" style="left:324px;top:${92+lines.length*22+12}px">— 已连接 · 会话保持中 —</div>`);
+    }
+  }
+
+  // --- AI 面板
+  L.push('<div class="tx tiny bold" style="left:1116px;top:52px">AI 助手</div>');
+  L.push('<div class="tx tiny dim" style="left:1180px;top:52px">● 已连接云平台</div>');
+  L.push('<div style="position:absolute;left:1116px;top:76px;width:308px;height:1px;background:#232936"></div>');
+  L.push('<div class="bubble ai" style="left:1116px;top:96px;width:250px">你好，我可以帮你执行命令、排查服务。试试问我「这个服务正常吗？」</div>');
+
+  if (st.aiText || st.aiSentAt !== null){
+    const txt = st.aiSentAt !== null ? st.aiText : st.aiText;
+    L.push(`<div class="bubble me" style="left:1174px;top:180px;width:250px">${txt || '&nbsp;'}</div>`);
+  }
+  if (st.aiSentAt !== null && (S.frame - st.aiSentAt) > 40){
+    L.push('<div class="bubble ai" style="left:1116px;top:250px;width:296px">从快照看，<b>deephaven-worker</b> 处于 active (running)，已稳定运行 1 小时 20 分钟，服务正常。</div>');
+  }
+
+  L.push(`<div class="aibox ${st.focus==='ai-input'?'focus':''}" style="left:1116px;top:782px;width:268px;height:72px"></div>`);
+  const t = st.aiText || '';
+  L.push(`<div class="tx tiny" style="left:1130px;top:796px;width:240px;line-height:1.6;color:${t?'#c8cfdb':'#5f6878'}">${t || '输入指令，或 @ 引用上下文…'}${st.focus==='ai-input'?'<span class="caret"></span>':''}</div>`);
+  L.push('<div class="box" style="left:1392px;top:820px;width:36px;height:34px;background:#4f7cff;border-color:#4f7cff"></div>');
+  L.push('<div class="tx tiny" style="left:1403px;top:830px;color:#fff">↑</div>');
+
+  // --- 状态栏
+  L.push('<div class="tx tiny dim mono" style="left:12px;top:880px">v1.3.2 · 已同步</div>');
+  L.push('<div class="tx tiny dim" style="left:1250px;top:880px">Workspace: ~/aishell</div>');
+
+  // --- 模态
+  if (st.modal === 'settings'){
+    L.push('<div style="position:absolute;inset:0;background:rgba(0,0,0,.5)"></div>');
+    L.push('<div class="box" style="left:420px;top:220px;width:600px;height:420px;background:#171c25;box-shadow:0 24px 60px rgba(0,0,0,.7)"></div>');
+    L.push('<div class="tx bold" style="left:452px;top:250px;font-size:15px">设置</div>');
+    ['通用','外观','账号','AI'].forEach((t,i)=>{
+      L.push(`<div class="tx tiny ${i===0?'':'dim'}" style="left:${452+i*60}px;top:290px;color:${i===0?'#8fb0ff':''}">${t}</div>`);
+    });
+    L.push('<div style="position:absolute;left:452px;top:314px;width:536px;height:1px;background:#232936"></div>');
+    [['Workspace 目录','~/aishell'],['默认终端','zsh'],['主题','深色'],['云同步','已开启']].forEach((r,i)=>{
+      L.push(`<div class="tx tiny dim" style="left:452px;top:${340+i*46}px">${r[0]}</div>`);
+      L.push(`<div class="tx tiny mono" style="left:${452+64}px;top:${362+i*46}px">${r[1]}</div>`);
+    });
+    L.push('<div class="box" style="left:908px;top:596px;width:80px;height:30px;background:#4f7cff;border-color:#4f7cff"></div>');
+    L.push('<div class="tx tiny" style="left:946px;top:604px;color:#fff">保存</div>');
+  }
+  if (st.modal === 'newproj'){
+    L.push('<div style="position:absolute;inset:0;background:rgba(0,0,0,.5)"></div>');
+    L.push('<div class="box" style="left:520px;top:260px;width:400px;height:240px;background:#171c25;box-shadow:0 24px 60px rgba(0,0,0,.7)"></div>');
+    L.push('<div class="tx bold" style="left:552px;top:290px;font-size:15px">新建项目</div>');
+    L.push('<div class="tx tiny dim" style="left:552px;top:330px">项目名称</div>');
+    L.push('<div class="box" style="left:552px;top:352px;width:336px;height:32px;background:#0c0f14"></div>');
+    L.push('<div class="tx tiny" style="left:566px;top:361px;color:#5f6878">如 deephaven-bigdata</div>');
+  }
+
+  // --- toast
+  if (st.toastAt !== null && (f0 - st.toastAt) < 60 && f0 >= st.toastAt){
+    L.push('<div class="box" style="left:600px;top:800px;width:240px;height:40px;background:#1b2029;border-color:#2ecc71"></div>');
+    L.push('<div class="tx tiny" style="left:620px;top:814px;color:#7ee2a8">✓ 设置已保存</div>');
+  }
+
+  return L.join('');
+}
+
+/* ==========================================================================
+   4. 渲染：画布覆盖层（指针 / 涟漪 / 高亮 / 字幕）
+   ========================================================================== */
+function overlaysHTML(){
+  const cam = cameraAt(S.frame);
+  const f = S.frame;
+  const out = [];
+
+  // 点击后高亮：取最近一次点击
+  const clicks = S.actions.filter(a=>a.kind==='click').sort((a,b)=>a.f-b.f);
+  const lastClick = clicks.filter(a=>a.f<=f && f-a.f < 46).pop();
+  if (lastClick){
+    const r = anchorRect(lastClick.anchor);
+    const p1 = toCanvas({x:r.x,y:r.y}, cam), p2 = toCanvas({x:r.x+r.w,y:r.y+r.h}, cam);
+    const pad = 5*cam.s;
+    out.push(`<div class="hlring" style="left:${p1.x-pad}px;top:${p1.y-pad}px;width:${p2.x-p1.x+pad*2}px;height:${p2.y-p1.y+pad*2}px"></div>`);
+  }
+  // 涟漪
+  clicks.forEach(a=>{
+    const t = (f - a.f)/RIPPLE_FRAMES;
+    if (t<0 || t>1) return;
+    const c = centerOf(a.anchor);
+    const p = toCanvas(c, cam);
+    const d = 60*cam.s*(0.15+0.85*t);
+    out.push(`<div class="ripple" style="left:${p.x-d/2}px;top:${p.y-d/2}px;width:${d}px;height:${d}px;opacity:${0.85*(1-t)}"></div>`);
+  });
+  // 字幕
+  S.captions.forEach(c=>{
+    if (f>=c.from && f<=c.to){
+      out.push(`<div class="caption">${c.text}</div>`);
+    }
+  });
+  // 指针
+  const cur = toCanvas(cursorAt(f), cam);
+  const pressing = clicks.some(a => f>=a.f && f<=a.f+5);
+  out.push(`<div class="cursor" style="left:${cur.x}px;top:${cur.y}px;transform:scale(${pressing?0.88:1})">
+    <svg width="26" height="38" viewBox="0 0 14 21"><path d="M1 1 L1 16.8 L4.6 12.9 L7.4 19.6 L9.9 18.5 L7.2 11.9 L12.6 11.5 Z" fill="#fff" stroke="#101216" stroke-width="1.1" stroke-linejoin="round"/></svg>
+  </div>`);
+
+  out.push('<div class="vignette"></div>');
+  return out.join('');
+}
+
+/* ==========================================================================
+   5. 主渲染
+   ========================================================================== */
+let f0 = 0;   // 当前整数帧（供 appHTML 的 toast 判断用）
+
+function renderStage(){
+  f0 = Math.floor(S.frame);
+  const cam = cameraAt(S.frame);
+  // 应用窗口在「相机变换容器」内，坐标即设计空间
+  document.getElementById('cam').style.transform =
+    `translate(${CANVAS.w/2 - cam.x*cam.s}px, ${CANVAS.h/2 - cam.y*cam.s}px) scale(${cam.s})`;
+  document.getElementById('win').innerHTML = appHTML(deriveAppState(S.frame));
+  renderHotspots();
+  document.getElementById('overlays').innerHTML = overlaysHTML();
+
+  document.getElementById('tc-frame').textContent = Math.round(S.frame);
+  document.getElementById('tc-total').textContent = Math.round(S.duration);
+  document.getElementById('tc-sec').textContent = (S.frame/FPS).toFixed(2);
+  document.getElementById('tc-cam').textContent = '相机 ' + cam.s.toFixed(2) + '×';
+  updatePlayhead();
+}
+
+function renderHotspots(){
+  const el = document.getElementById('hotspots');
+  if (!S.showHotspots || S.step==='import' || S.step==='capture' || S.step==='render'){
+    el.innerHTML = ''; return;
+  }
+  const acts = S.actions.filter(a=>a.f<=S.frame);
+  const shown = new Set(acts.map(a=>a.anchor));
+  el.innerHTML = ANCHORS.map(a=>{
+    const hi = S.hoverAnchor===a.id || S.selectedAnchor===a.id;
+    const label = hi ? `<span class="lbl">${a.id}</span>` : '';
+    return `<div class="hot ${hi?'hi':''}" style="left:${a.rect.x}px;top:${a.rect.y}px;width:${a.rect.w}px;height:${a.rect.h}px">${label}</div>`;
+  }).join('');
+}
+
+/* ==========================================================================
+   6. 时间线
+   ========================================================================== */
+const TRACKS = [
+  { id:'camera',  name:'摄像机', color:'#4f7cff', h:26 },
+  { id:'action',  name:'动作',   color:'#2a4a9e', h:34 },
+  { id:'caption', name:'字幕',   color:'#6b4bb8', h:26 },
+  { id:'audio',   name:'音频',   color:'#1f6b4a', h:26 },
+];
+
+function renderTimeline(){
+  const inner = document.getElementById('tl-inner');
+  const gutter = document.getElementById('tl-gutter');
+  const dur = Math.max(S.duration, 1);
+  const compact = document.body.classList.contains('tl-compact');
+
+  // 标尺
+  let html = '<div class="ruler" id="ruler" style="width:100%">';
+  for (let f=0; f<dur; f+=15){
+    const major = f % 60 === 0;
+    html += `<div class="tick" style="left:${f/dur*100}%;${major?'':'border-color:#1b202a'}">${major?`<span>${(f/FPS).toFixed(0)}s</span>`:''}</div>`;
+  }
+  html += '</div>';
+
+  // 动作片段（两种模式共用）
+  const actionBlocks = () => S.actions.map((a,i)=>{
+    const w = a.kind==='type' ? Math.max(60, a.text.length*4)/dur*100 : 60/dur*100;
+    const cls = a.kind==='type' ? 'type' : 'act';
+    const lbl = a.kind==='type' ? `⌨ ${a.text.slice(0,10)}` : `● ${a.anchor}`;
+    return `<div class="blk ${cls} ${isSel('action',i)?'sel':''}" data-track="action" data-i="${i}" style="left:${a.f/dur*100}%;width:${w}%">${lbl}</div>`;
+  }).join('');
+
+  if (compact){
+    // 录制中：只留一条事件带，把纵向空间全让给舞台
+    html += `<div class="track" style="height:26px" data-track="action">${actionBlocks()}</div>`;
+  } else {
+    const ch = TRACKS[0].h, ah = TRACKS[1].h, cph = TRACKS[2].h, auh = TRACKS[3].h;
+    html += `<div class="track" style="--h:${ch}px;height:${ch}px" data-track="camera">`;
+    S.camera.forEach((k,i)=>{
+      html += `<div class="kf ${isSel('camera',i)?'sel':''}" data-track="camera" data-i="${i}" style="left:${k.f/dur*100}%"></div>`;
+    });
+    html += '</div>';
+
+    html += `<div class="track" style="--h:${ah}px;height:${ah}px" data-track="action">${actionBlocks()}</div>`;
+
+    html += `<div class="track" style="--h:${cph}px;height:${cph}px" data-track="caption">`;
+    S.captions.forEach((c,i)=>{
+      const w = Math.max(1,(c.to-c.from))/dur*100;
+      html += `<div class="blk cap ${isSel('caption',i)?'sel':''}" data-track="caption" data-i="${i}" style="left:${c.from/dur*100}%;width:${w}%">${c.text.slice(0,14)}</div>`;
+    });
+    html += '</div>';
+
+    html += `<div class="track" style="--h:${auh}px;height:${auh}px" data-track="audio">`;
+    S.audio.forEach((a,i)=>{
+      html += `<div class="blk aud ${isSel('audio',i)?'sel':''}" data-track="audio" data-i="${i}" style="left:${a.from/dur*100}%;width:${(a.to-a.from)/dur*100}%">♪ ${a.src}</div>`;
+    });
+    html += '</div>';
+  }
+
+  html += '<div class="playhead" id="playhead" style="left:0"></div>';
+  inner.innerHTML = html;
+
+  gutter.innerHTML = compact ? '' : TRACKS.map(t=>
+    `<div class="tk-label" style="height:${t.h}px"><span class="sw" style="background:${t.color}"></span>${t.name}</div>`
+  ).join('');
+  document.getElementById('tl-stat').textContent =
+    `${S.actions.length} 个动作 · ${S.captions.length} 条字幕 · ${S.camera.length} 个相机关键帧`;
+  updatePlayhead();
+}
+
+const isSel = (t,i) => S.selection && S.selection.track===t && S.selection.i===i;
+function updatePlayhead(){
+  const ph = document.getElementById('playhead');
+  if (ph) ph.style.left = (S.frame/Math.max(S.duration,1)*100) + '%';
+}
+
+/* ==========================================================================
+   7. 规则引擎（把 video/ 的返工教训变成自动检查）
+   ========================================================================== */
+function lint(){
+  const out = [];
+  const acts = S.actions.map((a,i)=>({a,i})).sort((x,y)=>x.a.f-y.a.f);
+  const caps = S.captions.map((c,i)=>({c,i})).sort((x,y)=>x.c.from-y.c.from);
+  const cams = S.camera.map((k,i)=>({k,i})).sort((x,y)=>x.k.f-y.k.f);
+
+  acts.forEach(({a,i})=>{
+    if (!a.anchor)
+      out.push({ kind:'anchor-missing', i, lv:'error', f:a.f,
+        msg:`第 ${a.f} 帧的动作没有绑定锚点`,
+        fix:'绝对坐标会随界面变化漂移，必须绑定锚点。' });
+    else if (!anchorById(a.anchor))
+      out.push({ kind:'anchor-missing', i, lv:'error', f:a.f,
+        msg:`第 ${a.f} 帧引用了不存在的锚点「${a.anchor}」`,
+        fix:'锚点已失配，需要重新绑定或重新采集场景。' });
+  });
+
+  cams.forEach(({k,i})=>{
+    const hit = acts.filter(({a})=>a.f>=k.f && a.f-k.f < HOLD_BEFORE_POINTER);
+    if (k.f>0 && hit.length)
+      out.push({ kind:'camera-settle', i, lv:'warn', f:hit[0].a.f,
+        msg:`第 ${hit[0].a.f} 帧点击时，相机在 ${hit[0].a.f-k.f} 帧前刚移动过`,
+        fix:`建议相机停稳 ≥${HOLD_BEFORE_POINTER} 帧再出指针（video/ 分镜文档的节奏原则）。` });
+  });
+
+  for (let n=1;n<caps.length;n++){
+    const gap = caps[n].c.from - caps[n-1].c.to;
+    if (gap < MIN_CAPTION_GAP)
+      out.push({ kind:'caption-gap', i:caps[n].i, lv:'error', f:caps[n].c.from,
+        msg:`两条字幕只隔 ${gap} 帧（要求 ≥${MIN_CAPTION_GAP}）`,
+        fix:'会与上一条叠影，观众看不清。' });
+  }
+
+  for (let n=1;n<acts.length;n++){
+    const d = acts[n].a.f - acts[n-1].a.f;
+    if (d < 12)
+      out.push({ kind:'action-too-fast', i:acts[n].i, lv:'warn', f:acts[n].a.f,
+        msg:`第 ${acts[n].a.f} 帧与上一个动作只隔 ${d} 帧`,
+        fix:'节奏过快，观众来不及看清。建议 ≥18 帧。' });
+  }
+
+  const lastF = acts.length ? acts[acts.length-1].a.f : 0;
+  if (acts.length && S.duration - lastF < 45)
+    out.push({ kind:'trailing-short', lv:'warn', f:lastF,
+      msg:`结尾只留了 ${Math.round(S.duration-lastF)} 帧`,
+      fix:'收得太急，建议末动作后 ≥45 帧再收。' });
+
+  if (!S.captions.length && acts.length)
+    out.push({ kind:'no-caption', lv:'info', f:0,
+      msg:'还没有任何字幕，观众不知道你在演示什么',
+      fix:'可以让 AI 按动作自动配一遍字幕。' });
+
+  return out;
+}
+
+/* ==========================================================================
+   8. 右栏 / 左栏渲染
+   ========================================================================== */
+function renderLeft(){
+  const el = document.getElementById('left-body');
+  document.getElementById('anchor-count').textContent = S.captured ? ANCHORS.length + ' 个' : '—';
+  if (!S.captured){
+    el.innerHTML = `<div class="empty"><b>场景尚未还原</b><br>完成「导入项目 → 还原场景」后，<br>这里会列出可绑定的锚点。</div>`;
+    return;
+  }
+  const used = new Set(S.actions.map(a=>a.anchor));
+  el.innerHTML = ANCHORS.map(a=>`
+    <div class="item ${S.selectedAnchor===a.id?'on':''}" data-anchor="${a.id}">
+      <div class="t1">${a.label}
+        <span class="tag ${used.has(a.id)?'ok':'auto'}">${used.has(a.id)?'已用 '+S.actions.filter(x=>x.anchor===a.id).length+' 次':'可用'}</span>
+      </div>
+      <div class="t2">${a.id} · ${a.rect.w}×${a.rect.h}</div>
+    </div>`).join('');
+}
+
+/* ==========================================================================
+   8b. AI 对话面板 —— 取代属性/检查/事件三个面板
+   面向不懂剪辑的用户：不用调参数，点元素 + 说一句话。
+   ========================================================================== */
+const escHtml = (s)=> String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const sigOf = (i)=> i.kind + '|' + i.msg;
+
+function refLabel(kind, id){
+  if (kind==='anchor')  return '@' + id;
+  if (kind==='action'){ const a = S.actions[id]; return '@动作' + (id+1) + (a ? '·' + a.anchor : ''); }
+  if (kind==='caption'){ const c = S.captions[id]; return '@字幕' + (id+1) + (c ? '·' + c.text.slice(0,6) : ''); }
+  if (kind==='camera')  return '@相机' + (id+1);
+  return '@?';
+}
+
+/** 把元素/片段引用进输入框 —— 用户的核心动作就是这个 */
+function addRef(kind, id){
+  if (kind==='action'  && !S.actions[id])  return;
+  if (kind==='caption' && !S.captions[id]) return;
+  if (kind==='camera'  && !S.camera[id])   return;
+  if (kind==='anchor'  && !anchorById(id)) return;
+  if (S.refs.some(r=>r.kind===kind && r.id===id)) { focusAIInput(); return; }
+  S.refs.push({ kind, id, label: refLabel(kind, id) });
+  if (kind==='anchor'){ S.selectedAnchor = id; S.selection = null; }
+  else S.selection = { track:kind, i:id };
+  renderAll();
+  focusAIInput();
+}
+function removeRef(i){ S.refs.splice(i,1); renderAll(); }
+function focusAIInput(){ const t = document.getElementById('ai-input'); if (t) t.focus(); }
+
+function aiSay(text, tone, actions){
+  S.chat.push({ role:'ai', text, tone: tone||'info', actions: actions||[] });
+}
+function meSay(text, refs){ S.chat.push({ role:'me', text, refs: refs||[] }); }
+
+function renderChat(){
+  const el = document.getElementById('chat-body');
+  el.innerHTML = S.chat.map((m, mi)=>{
+    if (m.role === 'me'){
+      return `<div class="msg me"><div class="who">你</div><div class="cbub">${
+        (m.refs||[]).map(r=>`<span class="mref">${escHtml(r.label)}</span>`).join('')
+      }${m.text ? escHtml(m.text) : ''}</div></div>`;
+    }
+    const acts = (m.actions && m.actions.length)
+      ? `<div class="macts">${m.actions.map((a,i)=>
+          `<button class="mini${a.primary?' primary':''}" data-mact="${mi}:${i}">${escHtml(a.label)}</button>`).join('')}</div>`
+      : '';
+    return `<div class="msg ai ${m.tone||'info'}"><div class="who">AI 导演</div>
+      <div class="cbub">${m.text}${acts}</div></div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function renderComposer(){
+  const rb = document.getElementById('refbar');
+  rb.innerHTML = S.refs.map((r,i)=>
+    `<span class="ref">${escHtml(r.label)}<button data-refdel="${i}" title="移除引用">×</button></span>`).join('');
+
+  const anchorRef = S.refs.find(r=>r.kind==='anchor');
+  const actRef    = S.refs.find(r=>r.kind==='action');
+  const capRef    = S.refs.find(r=>r.kind==='caption');
+  let list;
+  if (anchorRef)      list = ['演示我点击它','给它配一条字幕','放大这里','这一步太急了，放慢'];
+  else if (capRef)    list = ['这条字幕再短一点','删掉这条'];
+  else if (actRef)    list = ['这个动作慢一点','删掉'];
+  else list = S.actions.length
+    ? ['帮我整体配运镜和字幕','检查一下有什么问题','把节奏再放慢一点']
+    : ['帮我从零编排一遍','检查一下有什么问题'];
+  document.getElementById('quick').innerHTML =
+    list.map(t=>`<button data-quick="${escHtml(t)}">${escHtml(t)}</button>`).join('');
+}
+
+/** 规则检查结果直接进对话流，而不是另开一个面板 */
+function pushLint(){
+  const issues = lint();
+  const sigs = new Set(issues.map(sigOf));
+  // 修好的问题：从对话流里撤掉对应提醒，也允许将来复发时重新播报
+  S.chat = S.chat.filter(m => !m._sig || sigs.has(m._sig));
+  for (const s of Array.from(S.lintSaid)) if (!sigs.has(s)) S.lintSaid.delete(s);
+  issues.forEach(i=>{
+    const sig = sigOf(i);
+    if (S.lintSaid.has(sig)) return;
+    S.lintSaid.add(sig);
+    const tone = i.lv==='error' ? 'error' : i.lv==='warn' ? 'warn' : 'info';
+    const head = i.lv==='error' ? '发现一个问题' : i.lv==='warn' ? '提醒一下' : '建议';
+    S.chat.push({ role:'ai', _sig:sig, tone,
+      text:`<b>${head}</b> · 第 ${i.f||0} 帧<br>${escHtml(i.msg)}<br><span class="dim">${escHtml(i.fix)}</span>`,
+      actions:[{ label:'帮我修', primary:true, run:()=>{
+          const fresh = lint().find(x=>sigOf(x)===sig);
+          if (fresh) applyFix(fresh); else aiSay('这个问题已经不存在了。','ok');
+        } },
+       { label:'先不管', run:()=>{} }] });
+  });
+}
+
+function welcome(){
+  aiSay('我是你的导演。你只要做两件事：<br>① 在画面里<b>点一下</b>你要演示的控件 —— 我会把它引用进来；<br>② 用一句话告诉我你想怎么改。<br><br><span class="dim">比如：「演示我点击它」「给它配一条字幕」「放大这里」。</span>', 'info',
+    [{ label:'先录制一段操作', primary:true, run:()=>{ setStep('record'); startRecording(); } },
+     { label:'检查当前时间线', run:()=>sendQuick('检查一下有什么问题') }]);
+}
+
+/** 自动修复：每条规则都要有对应的动作，否则「帮我修」就是假的 */
+function applyFix(issue){
+  switch(issue.kind){
+    case 'camera-settle': {
+      const k = S.camera[issue.i];
+      if (!k) return aiSay('这个关键帧已经不在了。','warn');
+      const prev = S.camera.filter(c=>c!==k && c.f < issue.f).sort((a,b)=>b.f-a.f)[0];
+      const nf = Math.max((prev ? prev.f : 0) + 2, issue.f - HOLD_BEFORE_POINTER);
+      const d = k.f - nf; k.f = nf;
+      return aiSay(`已把推进动作提前到第 ${nf} 帧（提前了 ${d} 帧），相机停稳后再出指针。`,'ok');
+    }
+    case 'caption-gap': {
+      const c = S.captions[issue.i];
+      if (!c) return aiSay('这条字幕已经不在了。','warn');
+      const sorted = S.captions.slice().sort((a,b)=>a.from-b.from);
+      const prev = sorted[sorted.indexOf(c)-1];
+      if (!prev) return aiSay('它是第一条字幕，没有前置冲突。','ok');
+      const shift = (prev.to + MIN_CAPTION_GAP + 4) - c.from;
+      c.from += shift; c.to += shift;
+      return aiSay(`已把这条字幕后移 ${shift} 帧，间隔拉到了 ${MIN_CAPTION_GAP + 4} 帧。`,'ok');
+    }
+    case 'action-too-fast': {
+      const a = S.actions[issue.i];
+      if (!a) return aiSay('这个动作已经不在了。','warn');
+      const prev = S.actions.filter(x=>x!==a && x.f < a.f).sort((p,q)=>q.f-p.f)[0];
+      const old = a.f;
+      a.f = (prev ? prev.f : 0) + 18;
+      return aiSay(`已把这个动作从第 ${old} 帧推到第 ${a.f} 帧，节奏放缓了。`,'ok');
+    }
+    case 'trailing-short': {
+      const last = S.actions.length ? Math.max(...S.actions.map(a=>a.f)) : 0;
+      S.duration = last + 90;
+      return aiSay(`已把结尾延长到第 ${S.duration} 帧，收尾不再突兀。`,'ok');
+    }
+    case 'no-caption':
+      aiExpand();
+      return aiSay('好，我按每个动作配了一条字幕。','ok');
+    case 'anchor-missing':
+      return aiSay('这个我没法自动修 —— 锚点在后端已经失配了，只有重新采集才能对上。','warn',
+        [{label:'重新采集场景', primary:true, run:()=>setStep('capture')}]);
+    default:
+      return aiSay('这条我暂时不会自动修。','warn');
+  }
+}
+
+function insertClick(anchorId, f){
+  S.actions.push({ f, kind:'click', anchor:anchorId });
+  S.actions.sort((a,b)=>a.f-b.f);
+  const from = Math.max(0, f - 34);
+  const c0 = cursorAt(from);
+  S.cursorPins.push({ f:from, x:c0.x, y:c0.y });
+  S.cursorPins.push({ f, anchor:anchorId });
+  S.cursorPins.sort((a,b)=>a.f-b.f);
+  S.duration = Math.max(S.duration, f + 90);
+  S.frame = Math.min(f + 24, S.duration);
+}
+
+/** 模拟的「AI 导演」：规则驱动，但每一步都真的改时间线 */
+function runAI(text, refs){
+  const t = text || '';
+  const has = (...kw)=> kw.some(k=>t.includes(k));
+  const anchorRef = refs.find(r=>r.kind==='anchor');
+  const actRef    = refs.find(r=>r.kind==='action');
+  const capRef    = refs.find(r=>r.kind==='caption');
+
+  /* --- 检查 --- */
+  if (has('检查','问题','看看','对不对','有没有错','审')) {
+    const issues = lint();
+    if (!issues.length) return aiSay('我把节奏、字幕间隔、锚点绑定都过了一遍 —— <b>没有问题</b>，可以直接出片。','ok');
+    return aiSay(`我检查了一遍，发现 <b>${issues.length} 处</b>要留意，已经列在下面了。`,'warn');
+  }
+
+  /* --- 删除 --- */
+  if (has('删','去掉','移除','不要') && refs.length) {
+    let n = 0;
+    refs.slice().sort((a,b)=>b.id-a.id).forEach(r=>{
+      if (r.kind==='action'  && S.actions[r.id]){ S.actions.splice(r.id,1); n++; }
+      if (r.kind==='caption' && S.captions[r.id]){ S.captions.splice(r.id,1); n++; }
+      if (r.kind==='camera'  && S.camera[r.id]){ S.camera.splice(r.id,1); n++; }
+    });
+    S.refs = []; S.selection = null;
+    return aiSay(n ? `已删除 ${n} 个片段。` : '我没找到要删的东西。', n ? 'ok' : 'warn');
+  }
+
+  /* --- 整体编排 --- */
+  if (has('运镜','编排','一键','整体','从头','全流程','配字幕')) {
+    if (!S.actions.length)
+      return aiSay('时间线上还没有动作。先录制一段真实操作，或者点画面里的元素告诉我该演示什么。','warn',
+        [{ label:'开始录制', primary:true, run:()=>{ setStep('record'); startRecording(); } }]);
+    aiExpand();
+    return aiSay('已按动作重新编排：推镜、指针轨迹、字幕都配好了。','ok');
+  }
+
+  /* --- 针对某个锚点 --- */
+  if (anchorRef){
+    const a = anchorById(anchorRef.id);
+    if (has('点击','点一下','演示','操作','单击','点它')) {
+      const f = S.actions.length ? Math.max(...S.actions.map(x=>x.f)) + 60 : Math.max(30, Math.round(S.frame));
+      insertClick(anchorRef.id, f);
+      return aiSay(`已在第 ${f} 帧插入一次点击「${a?a.label:anchorRef.id}」，指针会自动落在这个控件的正中心。`,'ok');
+    }
+    if (has('字幕','说明','旁白','文字','标注')) {
+      const act = S.actions.filter(x=>x.anchor===anchorRef.id).sort((p,q)=>p.f-q.f)[0];
+      let from = Math.max(0, (act ? act.f : Math.round(S.frame)) - 6);
+      const last = S.captions.slice().sort((p,q)=>q.from-p.from)[0];
+      if (last && from - last.to < MIN_CAPTION_GAP) from = last.to + MIN_CAPTION_GAP;
+      const txt = CAPTION_FOR[anchorRef.id] || ('演示：' + (a ? a.label : anchorRef.id));
+      S.captions.push({ from, to: from + 80, text: txt });
+      S.duration = Math.max(S.duration, from + 90);
+      return aiSay(`已加上字幕「${escHtml(txt)}」（第 ${from}–${from+80} 帧）。`,'ok');
+    }
+    if (has('放大','推近','聚焦','特写','突出','拉近')) {
+      const c = focusCam(anchorRef.id, 1.6);
+      const f = Math.round(S.frame);
+      S.camera.push({ f, s:1.6, x:c.x, y:c.y });
+      S.camera.push({ f:f + 30, s:1.6, x:c.x, y:c.y });
+      S.camera.sort((p,q)=>p.f-q.f);
+      return aiSay(`已在第 ${f} 帧推近到「${a?a.label:anchorRef.id}」，并保持 30 帧。`,'ok');
+    }
+  }
+
+  /* --- 针对某个动作 --- */
+  if (actRef){
+    const act = S.actions[actRef.id];
+    if (act){
+      if (has('慢','晚','推迟','推后')){ act.f += 20; return aiSay(`已把这个动作推迟 20 帧到第 ${act.f} 帧。`,'ok'); }
+      if (has('快','早','提前')){ act.f = Math.max(0, act.f - 20); return aiSay(`已把这个动作提前到第 ${act.f} 帧。`,'ok'); }
+    }
+  }
+
+  /* --- 针对某条字幕 --- */
+  if (capRef){
+    const c = S.captions[capRef.id];
+    if (c){
+      if (has('短','精简','简化','删字')) {
+        if (c.text.length <= 6) return aiSay('这条字幕已经够短了。','info');
+        const old = c.text;
+        c.text = c.text.slice(0, Math.max(4, Math.floor(c.text.length * 0.6)));
+        return aiSay(`已把「${escHtml(old)}」精简为「${escHtml(c.text)}」。`,'ok');
+      }
+      if (has('挪','后','推')){ const d = 20; c.from += d; c.to += d; return aiSay(`已把这条字幕后移 ${d} 帧。`,'ok'); }
+    }
+  }
+
+  /* --- 兜底：说清楚我能干什么 --- */
+  aiSay(`${refs.length ? '我收到了引用：' + refs.map(r=>`<span class="mref">${escHtml(r.label)}</span>`).join('') + '<br>' : ''}` +
+        `${t ? `但我还不太确定「${escHtml(t)}」具体要改什么。<br><br>` : '<br>'}` +
+        `试试这些说法：<br>· <b>演示我点击它</b> —— 插入点击动画<br>· <b>给它配一条字幕</b><br>` +
+        `· <b>放大这里</b> —— 推近镜头<br>· <b>帮我整体配运镜和字幕</b><br>· <b>检查一下有什么问题</b>`, 'info');
+}
+
+function sendChat(){
+  const ta = document.getElementById('ai-input');
+  const text = (ta.value || '').trim();
+  const refs = S.refs.slice();
+  if (!text && !refs.length) return;
+  meSay(text, refs);
+  ta.value = '';
+  S.refs = [];
+  runAI(text, refs);
+  renderAll();
+}
+function sendQuick(text){
+  const ta = document.getElementById('ai-input');
+  ta.value = text;
+  sendChat();
+}
+
+function renderRight(){
+  renderChat();
+  renderComposer();
+  const issues = lint();
+  const n = issues.filter(i=>i.lv!=='info').length;
+  const errs = issues.filter(i=>i.lv==='error').length;
+  const c = document.getElementById('chat-cnt');
+  c.style.display = n ? 'inline-block' : 'none';
+  c.textContent = n;
+  c.className = 'cnt' + (errs ? '' : ' w');
+}
+
+
+/* ==========================================================================
+   9. 覆盖层：导入 / 采集 / 渲染
+   ========================================================================== */
+function renderOverlay(){
+  const ov = document.getElementById('stage-overlay');
+  const p = S.probe, r = S.render;
+
+  if (S.step === 'import'){
+    if (!p){
+      ov.innerHTML = `<div class="overlay"><div class="card">
+        <h2>导入项目</h2>
+        <div class="sub">DemoStudio 需要能运行你的前端，才能把真实界面还原成可动画的场景。</div>
+        <div class="drop" id="drop">
+          <div class="big">⊕</div>
+          拖入项目目录，或点击选择<br>
+          <span style="color:#5f6878">支持 Vite / Next / CRA / 静态站点 · 也支持已部署的 URL</span>
+        </div>
+        <div style="margin-top:14px;font-size:12px;color:#8b93a5">最近：</div>
+        <div class="item" style="margin-top:6px"><div class="t1">aishell2-srun-aishell-cloud<span class="tag auto">Vite + Tauri</span></div>
+          <div class="t2">E:\\git_worktree\\aishell2-srun-aishell-cloud</div></div>
+        <div class="row"><span class="spacer"></span>
+          <button class="btn primary" id="btn-probe">开始导入</button></div>
+      </div></div>`;
+    } else {
+      ov.innerHTML = `<div class="overlay"><div class="card">
+        <h2>正在导入</h2>
+        <div class="sub">${p.title}</div>
+        <div class="prog"><i style="width:${p.pct}%"></i></div>
+        <div class="steps-list">${p.steps.map(s=>`
+          <div class="sl ${s.st}"><span class="ic">${s.st==='ok'?'✓':s.st==='run'?'◐':'○'}</span>
+          <span class="nm">${s.nm}</span><span class="tm">${s.tm||''}</span></div>`).join('')}</div>
+      </div></div>`;
+    }
+    return;
+  }
+
+  if (S.step === 'capture'){
+    if (!p || p.phase !== 'capture'){
+      ov.innerHTML = `<div class="overlay"><div class="card">
+        <h2>还原场景</h2>
+        <div class="sub">在无头 Chromium 中加载你的应用，注入确定性补丁，然后把可交互元素采集为锚点。</div>
+        <div class="kv"><span class="k">目标</span><span class="v">http://localhost:5173/workbench</span></div>
+        <div class="kv"><span class="k">视口</span><span class="v">1440×900 · DPR 1</span></div>
+        <div class="kv"><span class="k">网络</span><span class="v">录制 → 回放（离线可渲染）</span></div>
+        <div class="kv"><span class="k">时间</span><span class="v">冻结于 2026-01-01T00:00:00Z</span></div>
+        <div class="kv"><span class="k">动画</span><span class="v">CSS animation/transition 已暂停</span></div>
+        <div class="row"><span style="color:#8b93a5;font-size:11px">未命中的请求会直接报错，绝不静默走真实网络</span>
+          <span class="spacer"></span><button class="btn primary" id="btn-capture">开始采集</button></div>
+      </div></div>`;
+      return;
+    }
+    ov.innerHTML = `<div class="overlay"><div class="card">
+      <h2>正在采集</h2>
+      <div class="sub">${p.title}</div>
+      <div class="prog"><i style="width:${p.pct}%"></i></div>
+      <div class="steps-list">${p.steps.map(s=>`
+        <div class="sl ${s.st}"><span class="ic">${s.st==='ok'?'✓':s.st==='run'?'◐':'○'}</span>
+        <span class="nm">${s.nm}</span><span class="tm">${s.tm||''}</span></div>`).join('')}</div>
+    </div></div>`;
+    return;
+  }
+
+  if (S.step === 'render'){
+    if (!r){
+      ov.innerHTML = `<div class="overlay"><div class="card">
+        <h2>导出成片</h2>
+        <div class="sub">时间线将编译为 Remotion composition，由本地无头 Chromium 逐帧渲染，FFmpeg 编码。</div>
+        <div class="kv"><span class="k">规格</span><span class="v">1920×1080 · 30fps · ${Math.round(S.duration)} 帧</span></div>
+        <div class="kv"><span class="k">时长</span><span class="v">${(S.duration/FPS).toFixed(2)} s</span></div>
+        <div class="kv"><span class="k">渲染后端</span><span class="v">remotion-local</span></div>
+        <div class="kv"><span class="k">规则检查</span><span class="v ${lint().some(i=>i.lv==='error')?'':'ok'}">${
+          lint().filter(i=>i.lv==='error').length ? lint().filter(i=>i.lv==='error').length+' 个错误' : '通过'}</span></div>
+        <div class="row"><span style="color:#8b93a5;font-size:11px">存在错误时禁止导出 —— 失败要响亮</span>
+          <span class="spacer"></span><button class="btn primary" id="btn-render" ${lint().some(i=>i.lv==='error')?'disabled':''}>开始渲染</button></div>
+      </div></div>`;
+      return;
+    }
+    if (r.done){
+      ov.innerHTML = `<div class="overlay"><div class="card">
+        <div class="result-hd"><div class="ok-ic">✓</div>
+          <div><h2 style="margin:0">渲染完成</h2><div class="sub" style="margin:0">out/01-aishell-demo.mp4</div></div></div>
+        <div class="kv"><span class="k">文件大小</span><span class="v">18.4 MB</span></div>
+        <div class="kv"><span class="k">时长</span><span class="v">${(S.duration/FPS).toFixed(2)} s</span></div>
+        <div class="kv"><span class="k">帧数</span><span class="v">${Math.round(S.duration)}</span></div>
+        <div class="kv"><span class="k">时间线 hash</span><span class="v">${r.hash}</span></div>
+        <div class="kv"><span class="k">复现校验</span><span class="v ok">两次渲染逐帧一致 ✓</span></div>
+        <div class="sub" style="margin-top:14px;padding:10px;background:rgba(46,204,113,.07);border-radius:6px;border-left:2px solid #2ecc71">
+          <b style="color:#e7eaf0">确定性成立</b> —— 同一时间线两次渲染 hash 相同，这是整个架构的地基。
+        </div>
+        <div class="row"><span class="spacer"></span>
+          <button class="btn" id="btn-review">抽帧审片</button>
+          <button class="btn primary" id="btn-close-render">完成</button></div>
+      </div></div>`;
+      return;
+    }
+    ov.innerHTML = `<div class="overlay"><div class="card">
+      <h2>正在渲染</h2>
+      <div class="sub">${r.title}</div>
+      <div class="prog"><i style="width:${r.pct}%"></i></div>
+      <div class="steps-list">${r.steps.map(s=>`
+        <div class="sl ${s.st}"><span class="ic">${s.st==='ok'?'✓':s.st==='run'?'◐':'○'}</span>
+        <span class="nm">${s.nm}</span><span class="tm">${s.tm||''}</span></div>`).join('')}</div>
+      <div style="margin-top:10px;font-family:var(--mono);font-size:11px;color:#5f6878">${r.log||''}</div>
+    </div></div>`;
+    return;
+  }
+
+  ov.innerHTML = '';
+}
+
+/* ==========================================================================
+   10. 提示条
+   ========================================================================== */
+function renderHint(){
+  const h = document.getElementById('hint');
+  const map = {
+    import:  '<b>第 1 步 · 导入项目</b><br>选择一个能跑起来的前端项目。导入成功后进入场景还原。',
+    capture: '<b>第 2 步 · 还原场景</b><br>采集器会跑真实前端、注入确定性补丁、把可交互元素变成锚点。',
+    record:  S.recording
+      ? '<b>● 录制中</b> —— 在画面里真实点击，事件会记录成动作。<br>停止后自动转成时间线。'
+      : (S.events.length
+          ? `<b>录制完成</b> —— ${S.actions.length} 个动作已生成。<br>点顶部「4 编排」继续精修，或再录一次。`
+          : '<b>第 3 步 · 录制操作</b><br>点顶部 <span class="k">● 录制</span>，然后像平时一样操作界面。<br>这是零门槛路径：<b>你操作一遍，AI 帮你变成片子</b>。'),
+    director:'<b>第 4 步 · 编排</b><br>点画面里的元素把它<b>引用进右侧对话</b>，再说一句话让 AI 去改；<br>也可以直接拖时间线上的片段调时间。',
+    render:  '<b>第 5 步 · 出片</b><br>存在规则错误时会禁止导出 —— 失败要响亮，绝不产出偏位的帧。',
+  };
+  const modalStep = (S.step==='import' || S.step==='capture' || S.step==='render');
+  // 录制中一旦记下第一个动作，提示就让位给画面本身
+  const show = S.toasting || (!modalStep && !(S.recording && S.events.length > 0));
+  h.style.display = show ? 'block' : 'none';
+  if (!show) return;
+  h.innerHTML = S.toasting ? h.dataset.msg : (map[S.step] || '');
+  h.className = 'hint' + (S.recording ? ' rec' : '');
+}
+
+/* ==========================================================================
+   11. 播放循环
+   ========================================================================== */
+let raf = null, lastT = 0;
+function tick(t){
+  const dt = Math.min((t - lastT)/1000, 0.1); lastT = t;
+  if (S.playing || S.recording){
+    S.frame += dt * FPS;
+    // 录制模式：时间线随录制长度自然生长，末尾留 60 帧余量
+    if (S.recording) S.duration = Math.max(S.duration, S.frame + 60);
+    if (S.playing && S.frame >= S.duration){ S.frame = S.duration; S.playing = false; syncTransport(); }
+    if (S.recording) updateRecBar();
+    renderStage();
+    renderTimelineLite();
+    raf = requestAnimationFrame(tick);
+  } else {
+    raf = null;
+  }
+}
+function renderTimelineLite(){ updatePlayhead(); }
+function startLoop(){
+  if (raf) return;
+  lastT = performance.now();
+  raf = requestAnimationFrame(tick);
+}
+function play(){
+  if (S.playing || S.recording) return;
+  if (S.frame >= S.duration) S.frame = 0;
+  S.playing = true; syncTransport(); startLoop();
+}
+function pause(){ S.playing = false; S.recording = false; syncTransport(); renderAll(); }
+function syncTransport(){
+  document.getElementById('btn-play').textContent = S.playing ? '⏸ 暂停' : '▶ 播放';
+  const chip = document.getElementById('chip-state');
+  chip.textContent = '状态：' + (S.recording ? '录制中' : S.playing ? '播放中' : '空闲');
+  chip.className = 'chip' + (S.recording ? ' rec' : S.playing ? ' on' : '');
+  document.getElementById('btn-record').textContent = S.recording ? '■ 停止录制' : '● 录制';
+  document.getElementById('btn-record').className = 'btn' + (S.recording ? ' danger' : '');
+}
+
+/** 录制专注模式：切换 body 类，隐藏左右栏/工具条/传输条，并把时间轴折叠成一条事件带 */
+function applyRecordingChrome(){
+  const rec = S.recording;
+  const compact = rec && S.tlCollapsed;
+  const changed = document.body.classList.contains('recording') !== rec
+               || document.body.classList.contains('tl-compact') !== compact;
+  document.body.classList.toggle('recording', rec);
+  document.body.classList.toggle('tl-compact', compact);
+  const b = document.getElementById('btn-tl-toggle');
+  if (b) b.textContent = S.tlCollapsed ? '展开时间轴 ⌃' : '折叠时间轴 ⌄';
+  // 布局变了，舞台要重新按可用空间取最大尺寸
+  if (changed) requestAnimationFrame(fitStage);
+}
+
+function fmtClock(sec){
+  const m = Math.floor(sec/60), s = Math.floor(sec%60), d = Math.floor((sec*10)%10);
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0') + '.' + d;
+}
+function updateRecBar(){
+  const t = document.getElementById('rec-time');
+  if (t) t.textContent = fmtClock(S.frame/FPS);
+  const c = document.getElementById('rec-count');
+  if (c) c.textContent = '已记录 ' + S.actions.length + ' 个动作';
+}
+
+/* ==========================================================================
+   12. 编排：AI 一键展开（模拟 §8.3 的自动编排）
+   ========================================================================== */
+const CAPTION_FOR = {
+  'act-servers':  '先打开服务器列表',
+  'act-commands': '也可以直接调用收藏的命令',
+  'server-card':  '选中目标服务器 deephaven-dev-01',
+  'ssh-btn':      '一键 SSH 连上去，无需手动填配置',
+  'top-settings': '所有配置都在设置里统一管理',
+  'new-proj':     '新项目也能几步建好',
+  'ai-input':     '遇到问题，直接问 AI 助手',
+  'ai-send':      'AI 结合上下文给出结论',
+  'status-version':'版本与同步状态一目了然',
+};
+
+function aiExpand(){
+  const acts = S.actions.slice().sort((a,b)=>a.f-b.f);
+  if (!acts.length){ alert('请先录制或插入至少一个动作'); return; }
+
+  // --- 摄像机：每个动作前推近到锚点，hold ≥8 帧，动作后拉远
+  const BASE = 1.2, ZOOM = 1.6;
+  const cam = [{ f:0, s:BASE, x:720, y:450 }];
+  const push = (k) => { if (k.f > cam[cam.length-1].f) cam.push(k); };
+  let prevAct = -999;
+  acts.forEach(a=>{
+    const c = focusCam(a.anchor, ZOOM);
+    // 推镜起点需同时满足三件事，否则会踩到自己的规则：
+    // ① 晚于上一个关键帧 ② 与上一个动作相隔 ≥HOLD_BEFORE_POINTER ③ 给动作留出推近时间
+    const inF = Math.max(cam[cam.length-1].f + 1, prevAct + HOLD_BEFORE_POINTER + 1, a.f - 42);
+    push({ f: inF, s:ZOOM, x:c.x, y:c.y });
+    push({ f: Math.max(cam[cam.length-1].f+1, a.f - HOLD_BEFORE_POINTER), s:ZOOM, x:c.x, y:c.y });
+    prevAct = a.f;
+  });
+  const tail = Math.max(cam[cam.length-1].f+1, acts[acts.length-1].f + 40);
+  push({ f: tail, s:1.0, x:720, y:460 });
+  push({ f: Math.max(tail+1, S.duration), s:BASE, x:720, y:450 });
+
+  // --- 指针轨迹：提前 34 帧从上一处移动到当前锚点
+  const pins = [];
+  let prev = { x:1120, y:760 };
+  acts.forEach(a=>{
+    const t0 = Math.max((pins.length?pins[pins.length-1].f:0)+2, a.f-34);
+    if (t0 < a.f - 4) pins.push({ f:t0, x:prev.x, y:prev.y });
+    pins.push({ f:a.f, anchor:a.anchor });
+    prev = centerOf(a.anchor);
+  });
+
+  // --- 字幕：按动作生成，且强制满足 ≥16 帧间隔
+  const caps = [];
+  let lastCapAnchor = null, lastCapActF = -9999;
+  acts.forEach(a=>{
+    const txt = CAPTION_FOR[a.anchor];
+    if (!txt) return;
+    // 短时间内对同一目标重复操作，不重复配字幕（否则录两下同一个按钮就出两条一样的字幕）
+    if (a.anchor === lastCapAnchor && a.f - lastCapActF < 120) return;
+    let from = a.f - 6, to = a.f + 74;
+    const lastCap = caps[caps.length-1];
+    if (lastCap && from - lastCap.to < MIN_CAPTION_GAP) from = lastCap.to + MIN_CAPTION_GAP;
+    if (to <= from + 30) to = from + 70;
+    if (to > S.duration - 5) to = S.duration - 5;
+    if (to > from + 20){
+      caps.push({ from:Math.round(from), to:Math.round(to), text:txt });
+      lastCapAnchor = a.anchor; lastCapActF = a.f;
+    }
+  });
+
+  S.camera = cam; S.cursorPins = pins; S.captions = caps;
+  S.duration = Math.max(S.duration, acts[acts.length-1].f + 130);
+  S.audio = [{ from:0, to:S.duration, src:'bgm-placeholder.mp3' }];
+  S.selection = null;
+
+  toast('已生成 ' + cam.length + ' 个相机关键帧 · ' + pins.length + ' 个指针关键帧 · ' + caps.length + ' 条字幕');
+  renderAll();
+}
+
+function addCaption(){
+  const from = Math.round(S.frame);
+  const last = S.captions.slice().sort((a,b)=>a.from-b.from).pop();
+  let f2 = from;
+  if (last && f2 - last.to < MIN_CAPTION_GAP) f2 = last.to + MIN_CAPTION_GAP;
+  S.captions.push({ from:f2, to:f2+80, text:'新字幕' });
+  S.selection = { track:'caption', i:S.captions.length-1 };
+  renderAll();
+  addRef('caption', S.captions.length-1);   // 新建即引用，方便直接对 AI 说「这条改短」
+}
+
+/* ==========================================================================
+   13. 模拟流程：导入探测 / 采集 / 渲染
+   ========================================================================== */
+const PROBE_STEPS = [
+  { nm:'读取 package.json', tm:'', d:420 },
+  { nm:'识别框架：Vite 6 + React 18 + Tauri 2', tm:'', d:340 },
+  { nm:'解析启动脚本：npm run dev', tm:'', d:280 },
+  { nm:'启动 dev server 并等待就绪', tm:'', d:900 },
+  { nm:'健康检查 http://localhost:5173', tm:'', d:520 },
+  { nm:'枚举路由：/ · /workbench · /settings', tm:'', d:380 },
+];
+
+const CAPTURE_STEPS = [
+  { nm:'打开无头 Chromium，设置视口 1440×900', tm:'0.4s', d:600 },
+  { nm:'注入确定性补丁（Date / random / timer）', tm:'0.2s', d:520 },
+  { nm:'录制网络请求 → HAR（离线可回放）', tm:'1.1s', d:900 },
+  { nm:'暂停 CSS animation / 本地化字体', tm:'0.3s', d:600 },
+  { nm:'枚举可交互元素 → 生成锚点候选', tm:'0.6s', d:800 },
+  { nm:'抓取 DOM + computedStyle → scoped CSS', tm:'1.4s', d:900 },
+  { nm:'打包 Scene Bundle', tm:'0.5s', d:600 },
+  { nm:'确定性自检：两次加载同帧像素差 = 0', tm:'', d:800 },
+];
+
+const RENDER_STEPS = [
+  { nm:'编译时间线 → Remotion composition', tm:'', d:700 },
+  { nm:'启动无头 Chromium', tm:'', d:600 },
+  { nm:'逐帧渲染', tm:'', d:1900 },
+  { nm:'FFmpeg 编码 H.264 + 混音', tm:'', d:900 },
+  { nm:'复现校验：再渲一次比对 hash', tm:'', d:800 },
+];
+
+function runSteps(list, onDone, phase){
+  let i = 0;
+  const state = { pct:0, steps:list.map(s=>({...s, st:'wait'})), title:'', phase };
+  const step = () => {
+    if (i >= list.length){ onDone(state); return; }
+    state.steps[i].st = 'run';
+    state.title = list[i].nm;
+    S.probe = state; renderOverlay();
+    const dur = list[i].d;
+    const t0 = performance.now();
+    const anim = (t) => {
+      const p = Math.min((t-t0)/dur, 1);
+      state.pct = ((i + p)/list.length)*100;
+      state.steps[i].tm = (p*dur/1000).toFixed(1)+'s';
+      renderOverlay();
+      if (p < 1) requestAnimationFrame(anim);
+      else { state.steps[i].st='ok'; state.steps[i].tm=(dur/1000).toFixed(1)+'s'; i++; step(); }
+    };
+    requestAnimationFrame(anim);
+  };
+  step();
+}
+
+function doProbe(){
+  runSteps(PROBE_STEPS, () => {
+    S.imported = true;
+    document.getElementById('chip-source').textContent = 'aishell@local · Vite';
+    S.probe = null;
+    setStep('capture');
+  }, 'probe');
+}
+function doCapture(){
+  runSteps(CAPTURE_STEPS, () => {
+    S.captured = true;
+    S.probe = null;
+    document.getElementById('chip-det').textContent = '确定性：已加固 ✓';
+    document.getElementById('chip-det').className = 'chip on';
+    setStep('record');
+    toast('场景已还原，可以开始录制了');
+  }, 'capture');
+}
+function doRender(){
+  S.render = { pct:0, steps:RENDER_STEPS.map(s=>({...s,st:'wait'})), title:'', log:'' };
+  let i = 0;
+  const step = () => {
+    if (i >= RENDER_STEPS.length){
+      S.render.done = true;
+      S.render.hash = hashTimeline();
+      renderOverlay(); return;
+    }
+    S.render.steps[i].st = 'run';
+    S.render.title = RENDER_STEPS[i].nm;
+    const dur = RENDER_STEPS[i].d, t0 = performance.now();
+    const anim = (t) => {
+      const p = Math.min((t-t0)/dur,1);
+      S.render.pct = ((i+p)/RENDER_STEPS.length)*100;
+      S.render.steps[i].tm = (p*dur/1000).toFixed(1)+'s';
+      if (RENDER_STEPS[i].nm === '逐帧渲染')
+        S.render.log = `渲染中 ${Math.round(p*S.duration)} / ${Math.round(S.duration)} 帧`;
+      renderOverlay();
+      if (p<1) requestAnimationFrame(anim);
+      else { S.render.steps[i].st='ok'; S.render.steps[i].tm=(dur/1000).toFixed(1)+'s'; i++; step(); }
+    };
+    requestAnimationFrame(anim);
+  };
+  step();
+}
+function hashTimeline(){
+  const s = JSON.stringify({a:S.actions,c:S.captions,k:S.camera,d:S.duration});
+  let h = 0x811c9dc5;
+  for (let i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = (h*0x01000193)>>>0; }
+  return 'sha256:' + h.toString(16).padStart(8,'0') + '…';
+}
+
+/* ==========================================================================
+   14. 交互绑定
+   ========================================================================== */
+function setStep(step){
+  S.step = step;
+  if (step !== 'render') S.render = null;
+  if (step === 'import') { S.probe = null; }
+  if (step === 'capture' && !S.imported) { S.probe = null; }
+  renderAll();
+}
+
+function renderAll(){
+  // 先切布局类：renderTimeline 依赖 tl-compact 决定渲染展开还是折叠
+  applyRecordingChrome();
+  // 规则检查结果进对话流（去重，不重复播报同一个问题）
+  if (!S.lintSaid) S.lintSaid = new Set();
+  pushLint();
+  // 步骤高亮
+  const order = ['import','capture','record','director','render'];
+  const cur = order.indexOf(S.step);
+  document.querySelectorAll('.step').forEach(el=>{
+    const i = order.indexOf(el.dataset.step);
+    el.className = 'step' + (i===cur?' on':'') + (i<cur?' done':'');
+  });
+  // 右栏标签高亮（集中同步，避免各处重复）
+  renderStage();
+  renderTimeline();
+  renderLeft();
+  renderRight();
+  renderOverlay();
+  renderHint();
+  syncTransport();
+}
+
+/* --- 顶栏 --- */
+document.getElementById('stepper').addEventListener('click', e => {
+  const b = e.target.closest('.step'); if (!b) return;
+  setStep(b.dataset.step);
+});
+document.getElementById('btn-reset').addEventListener('click', () => {
+  Object.assign(S, { step:'import', imported:false, captured:false, frame:0, duration:300,
+    playing:false, recording:false, tlCollapsed:true, events:[], actions:[], captions:[], camera:[],
+    cursorPins:[], audio:[], selection:null, selectedAnchor:null, probe:null, render:null, toasting:false });
+  document.getElementById('chip-source').textContent = '未导入';
+  document.getElementById('chip-det').textContent = '确定性：未加固';
+  document.getElementById('chip-det').className = 'chip';
+  renderAll();
+});
+document.getElementById('btn-export').addEventListener('click', () => setStep('render'));
+document.getElementById('btn-guide').addEventListener('click', async () => {
+  const wait = (ms) => new Promise(r=>setTimeout(r,ms));
+  setStep('import'); await wait(200); doProbe();
+  await wait(PROBE_STEPS.reduce((a,s)=>a+s.d,0) + 500);
+  S.probe = {phase:'capture', steps:CAPTURE_STEPS.map(s=>({...s,st:'wait'})), pct:0, title:''};
+  renderAll(); await wait(120); doCapture();
+  await wait(CAPTURE_STEPS.reduce((a,s)=>a+s.d,0) + 600);
+  // 生成一段演示动作
+  S.actions = [
+    { f: 60,  kind:'click', anchor:'server-card' },
+    { f: 150, kind:'click', anchor:'ssh-btn' },
+    { f: 240, kind:'click', anchor:'ai-input' },
+    { f: 262, kind:'type',  anchor:'ai-input', text:'这个服务运行正常吗？', cps:14 },
+    { f: 380, kind:'click', anchor:'ai-send' },
+  ];
+  S.duration = 560; S.frame = 0;
+  setStep('director'); await wait(400); aiExpand();
+  await wait(600); S.frame = 0; play();
+});
+
+/* --- 工具条 --- */
+document.getElementById('btn-hotspots').addEventListener('click', (e)=>{
+  S.showHotspots = !S.showHotspots;
+  e.target.className = 'btn' + (S.showHotspots?'':' ghost');
+  renderStage();
+});
+document.getElementById('btn-play').addEventListener('click', ()=> S.playing ? pause() : play());
+document.getElementById('btn-home').addEventListener('click', ()=>{ S.frame = 0; renderStage(); updatePlayhead(); });
+function startRecording(){
+  if (!S.captured){ toast('请先完成场景还原'); return; }
+  S.step = 'record'; S.recording = true; S.playing = false; S.frame = 0;
+  S.events = []; S.actions = [];
+  S.captions = []; S.camera = []; S.cursorPins = []; S.duration = 300;
+  S.tlCollapsed = true;   // 每次进入录制都从专注模式开始
+  updateRecBar(); syncTransport(); renderAll(); startLoop();
+}
+function stopRecording(){
+  if (!S.recording) return;
+  S.recording = false;
+  S.duration = Math.max(S.duration, (S.events.length ? S.events[S.events.length-1].f : 0) + 120);
+  convertEvents();
+  // 录完直接把下一步交给 AI，而不是让用户自己去某个面板找
+  if (S.actions.length){
+    aiSay(`录制完成：记下了 <b>${S.actions.length} 个动作</b>（${S.events.length} 个事件）。<br>
+      要我一键配上运镜和字幕吗？也可以继续在画面里点元素，告诉我要改哪里。`, 'ok',
+      [{ label:'一键配运镜和字幕', primary:true, run:()=>{ aiExpand(); aiSay('已按动作配好推镜、指针轨迹和字幕。还想调什么直接说。','ok'); renderAll(); } },
+       { label:'先自己看看', run:()=>{} }]);
+  }
+  updateRecBar(); syncTransport(); renderAll();
+}
+document.getElementById('btn-record').addEventListener('click', ()=> S.recording ? stopRecording() : startRecording());
+document.getElementById('btn-rec-stop').addEventListener('click', stopRecording);
+document.getElementById('btn-tl-toggle').addEventListener('click', ()=>{
+  S.tlCollapsed = !S.tlCollapsed;
+  applyRecordingChrome();
+  renderAll();
+});
+document.getElementById('btn-ai').addEventListener('click', aiExpand);
+document.getElementById('btn-add-cap').addEventListener('click', addCaption);
+
+/* --- 右栏：AI 对话 --- */
+const chatBody = document.getElementById('chat-body');
+chatBody.addEventListener('click', e=>{
+  const b = e.target.closest('[data-mact]');
+  if (!b) return;
+  const [mi, ai] = b.dataset.mact.split(':').map(Number);
+  const m = S.chat[mi];
+  if (m && m.actions && m.actions[ai]) m.actions[ai].run();
+  renderAll();
+});
+document.getElementById('refbar').addEventListener('click', e=>{
+  const b = e.target.closest('[data-refdel]');
+  if (b) removeRef(+b.dataset.refdel);
+});
+document.getElementById('quick').addEventListener('click', e=>{
+  const b = e.target.closest('[data-quick]');
+  if (b) sendQuick(b.dataset.quick);
+});
+document.getElementById('btn-chat-send').addEventListener('click', sendChat);
+document.getElementById('btn-chat-clear').addEventListener('click', ()=>{
+  S.chat = []; S.refs = []; S.lintSaid = new Set();
+  welcome();
+  renderAll();
+});
+document.getElementById('ai-input').addEventListener('keydown', e=>{
+  if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); }
+});
+
+/* --- 舞台：锚点命中 / 点击插入 / 录制 --- */
+const stage = document.getElementById('stage');
+const winEl = document.getElementById('win');
+
+function designPointFromEvent(e){
+  const canvas = document.getElementById('canvas');
+  const k = canvas.getBoundingClientRect().width / CANVAS.w;
+  const cam = cameraAt(S.frame);
+  // 画布坐标 → 设计空间
+  const cr = canvas.getBoundingClientRect();
+  const cx = (e.clientX - cr.left)/k, cy = (e.clientY - cr.top)/k;
+  return { x:(cx - CANVAS.w/2)/cam.s + cam.x, y:(cy - CANVAS.h/2)/cam.s + cam.y };
+}
+function hitAnchor(p){
+  for (let i=ANCHORS.length-1;i>=0;i--){
+    const r = ANCHORS[i].rect;
+    if (p.x>=r.x && p.x<=r.x+r.w && p.y>=r.y && p.y<=r.y+r.h) return ANCHORS[i];
+  }
+  return null;
+}
+
+stage.addEventListener('mousemove', e=>{
+  if (S.step==='import'||S.step==='capture'||S.step==='render') return;
+  if (e.target.closest('.overlay')||e.target.closest('.hint')) return;
+  const a = hitAnchor(designPointFromEvent(e));
+  const id = a ? a.id : null;
+  if (id !== S.hoverAnchor){ S.hoverAnchor = id; renderHotspots(); }
+  stage.style.cursor = a ? 'pointer' : 'default';
+});
+stage.addEventListener('mouseleave', ()=>{ S.hoverAnchor = null; renderHotspots(); });
+
+stage.addEventListener('click', e=>{
+  if (S.step==='import'||S.step==='capture'||S.step==='render') return;
+  if (e.target.closest('.overlay')||e.target.closest('.hint')) return;
+  const a = hitAnchor(designPointFromEvent(e));
+  if (S.recording){
+    const f = Math.round(S.frame);
+    const ev = { f, kind:'click', anchor: a ? a.id : null };
+    S.events.push(ev);
+    if (a){
+      S.actions.push({ f, kind:'click', anchor:a.id });
+      // 自动补一个指针 pin 到该锚点，保证录制期间指针跟手
+      S.cursorPins.push({ f: Math.max(0,f-26), x:cursorAt(Math.max(0,f-26)).x, y:cursorAt(Math.max(0,f-26)).y });
+      S.cursorPins.push({ f, anchor:a.id });
+    }
+    renderAll();
+    return;
+  }
+  if (a){
+    // 导演模式下点元素 = 把它引用进对话，让用户直接指挥 AI
+    addRef('anchor', a.id);
+    return;
+  }
+});
+
+/* 键盘输入录制（在 AI 输入框锚点内） */
+window.addEventListener('keydown', e=>{
+  if (!S.recording || !S.selectedAnchor && !S.hoverAnchor) return;
+  if (e.key.length !== 1) return;
+  const id = S.hoverAnchor || S.selectedAnchor;
+  if (id !== 'ai-input') return;
+  const f = Math.round(S.frame);
+  const last = S.actions.filter(a=>a.kind==='type').pop();
+  if (last && f - last.f < 20) { last.text += e.key; }
+  else S.actions.push({ f, kind:'type', anchor:'ai-input', text:e.key, cps:14 });
+  S.events.push({ f, kind:'type', anchor:'ai-input', text:e.key });
+  renderAll();
+});
+
+/** 录制事件 → 语义动作序列（并顺带生成初始指针轨迹） */
+function convertEvents(){
+  S.actions.sort((a,b)=>a.f-b.f);
+  if (!S.cursorPins.length && S.actions.length){
+    S.cursorPins = [{ f:0, x:1120, y:760 }].concat(S.actions.map(a=>({ f:a.f, anchor:a.anchor })));
+  }
+  toast(`录制完成：${S.events.length} 个事件 → ${S.actions.length} 个动作`);
+}
+
+/* --- 左栏：点锚点 = 引用进对话 --- */
+document.getElementById('left-body').addEventListener('click', e=>{
+  const it = e.target.closest('.item'); if (!it || !it.dataset.anchor) return;
+  addRef('anchor', it.dataset.anchor);
+});
+
+/* --- 右栏对话中的「帮我修」等按钮，见上面的 chatBody 委托 --- */
+
+/* --- 右栏旧面板已由 AI 对话取代 --- */
+
+/* --- 时间线：拖动片段 / 拖动关键帧 / 刻度跳转 --- */
+const tlScroll = document.getElementById('tl-scroll');
+let drag = null;
+
+tlScroll.addEventListener('pointerdown', e=>{
+  const blk = e.target.closest('.blk');
+  const kf = e.target.closest('.kf');
+  const ruler = e.target.closest('.ruler');
+  if (ruler){
+    const r = ruler.getBoundingClientRect();
+    S.frame = Math.max(0, Math.min(S.duration, (e.clientX-r.left)/r.width*S.duration));
+    renderStage(); updatePlayhead(); return;
+  }
+  if (kf){
+    drag = { type:'kf', track:'camera', i:+kf.dataset.i, x0:e.clientX, moved:false };
+    kf.setPointerCapture(e.pointerId);
+    S.selection = { track:'camera', i:+kf.dataset.i };
+    renderAll();
+    return;
+  }
+  if (blk){
+    drag = { type:'blk', track:blk.dataset.track, i:+blk.dataset.i, startX:e.clientX, x0:e.clientX, moved:false };
+    blk.setPointerCapture(e.pointerId);
+    S.selection = { track:blk.dataset.track, i:+blk.dataset.i };
+    renderAll();
+    return;
+  }
+});
+
+tlScroll.addEventListener('pointermove', e=>{
+  if (!drag) return;
+  if (Math.abs(e.clientX - drag.x0) > 3) drag.moved = true;
+  if (!drag.moved) return;                 // 只是点一下，不算拖动
+  const wrap = tlScroll.getBoundingClientRect();
+  const f = Math.max(0, Math.round((e.clientX - wrap.left)/wrap.width*S.duration));
+  if (drag.type === 'kf'){ S.camera[drag.i].f = f; }
+  else {
+    const t = drag.track;
+    if (t==='action') S.actions[drag.i].f = f;
+    if (t==='caption'){
+      const c = S.captions[drag.i], len = c.to - c.from;
+      c.from = f; c.to = f + len;
+    }
+    if (t==='audio'){ const a = S.audio[drag.i], len = a.to-a.from; a.from = f; a.to = f+len; }
+  }
+  renderTimeline(); renderRight(); renderStage();
+});
+
+tlScroll.addEventListener('pointerup', ()=>{
+  if (drag && !drag.moved){
+    // 只是点了一下片段 → 引用进对话，而不是弹出一堆参数
+    const { track, i } = drag;
+    drag = null;
+    if (track==='action' || track==='caption' || track==='camera') addRef(track, i);
+    return;
+  }
+  drag = null; renderAll();
+});
+tlScroll.addEventListener('pointercancel', ()=>{ drag = null; });
+
+/* --- 覆盖层按钮（事件委托） --- */
+document.getElementById('stage-overlay').addEventListener('click', e=>{
+  if (e.target.closest('#drop') || e.target.id === 'btn-probe') { doProbe(); return; }
+  if (e.target.id === 'btn-capture'){ doCapture(); return; }
+  if (e.target.id === 'btn-render'){ doRender(); return; }
+  if (e.target.id === 'btn-close-render'){ setStep('director'); return; }
+  if (e.target.id === 'btn-review'){ toast('审片模式：并排对比抽帧，逐帧批注（原型未展开）'); return; }
+});
+
+/* --- toast --- */
+let toastTimer = null;
+function toast(msg){
+  S.toasting = true;
+  document.getElementById('hint').dataset.msg = '✓ ' + msg;
+  renderHint();
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ S.toasting = false; renderHint(); }, 2600);
+}
+
+/* --- 舞台尺寸自适应 --- */
+let fitting = false;
+function fitStage(){
+  if (fitting) return;
+  fitting = true;
+  try{
+    const wrap = document.getElementById('stage-wrap');
+    const st = document.getElementById('stage');
+    const cs = getComputedStyle(wrap);
+    const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+    const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+    const availW = Math.max(120, wrap.clientWidth - padX);
+    const availH = Math.max(68, wrap.clientHeight - padY);
+    const k = Math.min(availW/CANVAS.w, availH/CANVAS.h);
+    st.style.width = (CANVAS.w*k)+'px';
+    st.style.height = (CANVAS.h*k)+'px';
+    document.getElementById('canvas').style.transform = `scale(${k})`;
+  } finally { fitting = false; }
+}
+window.addEventListener('resize', fitStage);
+// 布局变化（进入/退出录制专注模式、折叠时间轴）时自动重新取最大尺寸
+if (window.ResizeObserver){
+  new ResizeObserver(()=>requestAnimationFrame(fitStage)).observe(document.getElementById('stage-wrap'));
+}
+
+/* ==========================================================================
+   15. 启动
+   ========================================================================== */
+fitStage();
+welcome();
+renderAll();
+</script>
+</body>
+</html>

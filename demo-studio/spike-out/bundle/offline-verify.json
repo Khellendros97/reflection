@@ -1,0 +1,452 @@
+{
+  "total": 26,
+  "unique": 26,
+  "missing": 0,
+  "ambiguous": 0,
+  "broken": 0,
+  "geometryDrift": 0,
+  "detail": [
+    {
+      "id": "项目",
+      "selector": "#app > div.page-root > div.page-topbar:nth-of-type(1) > button.btn.small:nth-of-type(1)",
+      "matches": 1,
+      "rect": [
+        1106,
+        8,
+        46,
+        24
+      ],
+      "original": {
+        "x": 1106,
+        "y": 8,
+        "w": 46,
+        "h": 24
+      }
+    },
+    {
+      "id": "设置",
+      "selector": "#app > div.page-root > div.page-topbar:nth-of-type(1) > button.btn.small:nth-of-type(2)",
+      "matches": 1,
+      "rect": [
+        1162,
+        8,
+        46,
+        24
+      ],
+      "original": {
+        "x": 1162,
+        "y": 8,
+        "w": 46,
+        "h": 24
+      }
+    },
+    {
+      "id": "账号",
+      "selector": "#app > div.page-root > div.page-topbar:nth-of-type(1) > button.btn.small:nth-of-type(3)",
+      "matches": 1,
+      "rect": [
+        1218,
+        8,
+        46,
+        24
+      ],
+      "original": {
+        "x": 1218,
+        "y": 8,
+        "w": 46,
+        "h": 24
+      }
+    },
+    {
+      "id": "切换亮色-深色主题",
+      "selector": "#app > div.page-root > div.page-topbar:nth-of-type(1) > button.icon-btn.tb-theme:nth-of-type(4)",
+      "matches": 1,
+      "rect": [
+        1274,
+        6,
+        28,
+        28
+      ],
+      "original": {
+        "x": 1274,
+        "y": 6,
+        "w": 28,
+        "h": 28
+      }
+    },
+    {
+      "id": "最小化",
+      "selector": "#app > div.page-root > div.page-topbar:nth-of-type(1) > div.tb-win-controls:nth-of-type(3) > button.tb-win-btn.tb-win-min:nth-of-type(1)",
+      "matches": 1,
+      "rect": [
+        1318,
+        5,
+        34,
+        30
+      ],
+      "original": {
+        "x": 1318,
+        "y": 5,
+        "w": 34,
+        "h": 30
+      }
+    },
+    {
+      "id": "最大化-还原",
+      "selector": "#app > div.page-root > div.page-topbar:nth-of-type(1) > div.tb-win-controls:nth-of-type(3) > button.tb-win-btn.tb-win-max:nth-of-type(2)",
+      "matches": 1,
+      "rect": [
+        1354,
+        5,
+        34,
+        30
+      ],
+      "original": {
+        "x": 1354,
+        "y": 5,
+        "w": 34,
+        "h": 30
+      }
+    },
+    {
+      "id": "关闭",
+      "selector": "#app > div.page-root > div.page-topbar:nth-of-type(1) > div.tb-win-controls:nth-of-type(3) > button.tb-win-btn.tb-win-close:nth-of-type(3)",
+      "matches": 1,
+      "rect": [
+        1390,
+        5,
+        34,
+        30
+      ],
+      "original": {
+        "x": 1390,
+        "y": 5,
+        "w": 34,
+        "h": 30
+      }
+    },
+    {
+      "id": "搜索项目名-路径-所属目录-标签",
+      "selector": "#proj-search",
+      "matches": 1,
+      "rect": [
+        24,
+        95,
+        340,
+        33
+      ],
+      "original": {
+        "x": 24,
+        "y": 95,
+        "w": 340,
+        "h": 33
+      }
+    },
+    {
+      "id": "全部展开",
+      "selector": "#btn-toggle-folders",
+      "matches": 1,
+      "rect": [
+        372,
+        98,
+        28,
+        28
+      ],
+      "original": {
+        "x": 372,
+        "y": 98,
+        "w": 28,
+        "h": 28
+      }
+    },
+    {
+      "id": "卡片视图",
+      "selector": "#btn-view-card",
+      "matches": 1,
+      "rect": [
+        411,
+        100,
+        26,
+        24
+      ],
+      "original": {
+        "x": 411,
+        "y": 100,
+        "w": 26,
+        "h": 24
+      }
+    },
+    {
+      "id": "列表视图",
+      "selector": "#btn-view-list",
+      "matches": 1,
+      "rect": [
+        439,
+        100,
+        26,
+        24
+      ],
+      "original": {
+        "x": 439,
+        "y": 100,
+        "w": 26,
+        "h": 24
+      }
+    },
+    {
+      "id": "从其他-ssh-工具导入",
+      "selector": "#btn-import-ssh-tool",
+      "matches": 1,
+      "rect": [
+        476,
+        96,
+        170,
+        31
+      ],
+      "original": {
+        "x": 476,
+        "y": 96,
+        "w": 170,
+        "h": 31
+      }
+    },
+    {
+      "id": "新建分类目录",
+      "selector": "#btn-new-folder",
+      "matches": 1,
+      "rect": [
+        654,
+        96,
+        127,
+        31
+      ],
+      "original": {
+        "x": 654,
+        "y": 96,
+        "w": 127,
+        "h": 31
+      }
+    },
+    {
+      "id": "新建项目",
+      "selector": "#btn-new",
+      "matches": 1,
+      "rect": [
+        789,
+        96,
+        101,
+        31
+      ],
+      "original": {
+        "x": 789,
+        "y": 96,
+        "w": 101,
+        "h": 31
+      }
+    },
+    {
+      "id": "重命名生产子分类一并改名",
+      "selector": "#proj-groups > div.proj-group:nth-of-type(1) > div.proj-group-title:nth-of-type(1) > button.icon-btn:nth-of-type(1)",
+      "matches": 1,
+      "rect": [
+        863,
+        145,
+        22,
+        22
+      ],
+      "original": {
+        "x": 863,
+        "y": 145,
+        "w": 22,
+        "h": 22
+      }
+    },
+    {
+      "id": "删除生产递归删除其下-1-个项目",
+      "selector": "#proj-groups > div.proj-group:nth-of-type(1) > div.proj-group-title:nth-of-type(1) > button.icon-btn.danger:nth-of-type(2)",
+      "matches": 1,
+      "rect": [
+        892,
+        145,
+        22,
+        22
+      ],
+      "original": {
+        "x": 892,
+        "y": 145,
+        "w": 22,
+        "h": 22
+      }
+    },
+    {
+      "id": "重命名测试子分类一并改名",
+      "selector": "#proj-groups > div.proj-group:nth-of-type(2) > div.proj-group-title > button.icon-btn:nth-of-type(1)",
+      "matches": 1,
+      "rect": [
+        863,
+        183,
+        22,
+        22
+      ],
+      "original": {
+        "x": 863,
+        "y": 183,
+        "w": 22,
+        "h": 22
+      }
+    },
+    {
+      "id": "删除测试",
+      "selector": "#proj-groups > div.proj-group:nth-of-type(2) > div.proj-group-title > button.icon-btn.danger:nth-of-type(2)",
+      "matches": 1,
+      "rect": [
+        892,
+        183,
+        22,
+        22
+      ],
+      "original": {
+        "x": 892,
+        "y": 183,
+        "w": 22,
+        "h": 22
+      }
+    },
+    {
+      "id": "调整-ai-助手面板宽度",
+      "selector": "#app > div.page-root > div.welcome-page:nth-of-type(2) > div.welcome-content:nth-of-type(1) > div.wb-resize-handle.welcome-ai-resizer",
+      "matches": 1,
+      "rect": [
+        944,
+        40,
+        6,
+        834
+      ],
+      "original": {
+        "x": 944,
+        "y": 40,
+        "w": 6,
+        "h": 834
+      }
+    },
+    {
+      "id": "切换会话",
+      "selector": "#ai-session-select",
+      "matches": 1,
+      "rect": [
+        959,
+        89,
+        405,
+        26
+      ],
+      "original": {
+        "x": 959,
+        "y": 89,
+        "w": 405,
+        "h": 26
+      }
+    },
+    {
+      "id": "新建会话",
+      "selector": "#ai-new-session",
+      "matches": 1,
+      "rect": [
+        1370,
+        88,
+        28,
+        28
+      ],
+      "original": {
+        "x": 1370,
+        "y": 88,
+        "w": 28,
+        "h": 28
+      }
+    },
+    {
+      "id": "分离到独立窗口",
+      "selector": "#ai-detach",
+      "matches": 1,
+      "rect": [
+        1404,
+        88,
+        28,
+        28
+      ],
+      "original": {
+        "x": 1404,
+        "y": 88,
+        "w": 28,
+        "h": 28
+      }
+    },
+    {
+      "id": "系统任务上下文固定为工作模式",
+      "selector": "#ai-mode-select",
+      "matches": 1,
+      "rect": [
+        1025,
+        760,
+        78,
+        22
+      ],
+      "original": {
+        "x": 1025,
+        "y": 760,
+        "w": 78,
+        "h": 22
+      }
+    },
+    {
+      "id": "思考强度立即生效",
+      "selector": "#ai-effort-select",
+      "matches": 1,
+      "rect": [
+        1174,
+        760,
+        78,
+        22
+      ],
+      "original": {
+        "x": 1174,
+        "y": 760,
+        "w": 78,
+        "h": 22
+      }
+    },
+    {
+      "id": "ai-对话输入框",
+      "selector": "#ai-input",
+      "matches": 1,
+      "rect": [
+        968,
+        801,
+        455,
+        58
+      ],
+      "original": {
+        "x": 968,
+        "y": 801,
+        "w": 455,
+        "h": 58
+      }
+    },
+    {
+      "id": "隐藏-ai-助手",
+      "selector": "div.page-root > div.welcome-page:nth-of-type(2) > div.app-statusbar:nth-of-type(2) > div.statusbar-right:nth-of-type(3) > button.statusbar-ai-toggle.active",
+      "matches": 1,
+      "rect": [
+        1363,
+        877,
+        69,
+        22
+      ],
+      "original": {
+        "x": 1363,
+        "y": 877,
+        "w": 69,
+        "h": 22
+      }
+    }
+  ]
+}

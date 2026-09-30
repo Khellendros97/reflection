@@ -1,0 +1,86 @@
+[
+  {
+    "route": "welcome",
+    "hash": "#/welcome",
+    "actualHash": "#/welcome",
+    "stable": true,
+    "quietMs": 385,
+    "anchors": 31,
+    "domNodes": 454,
+    "cssRules": 1631,
+    "suspiciousText": [],
+    "ipcCalls": 31,
+    "uncoveredIpc": [],
+    "topAnchors": [
+      "项目",
+      "设置",
+      "账号",
+      "切换亮色-深色主题",
+      "最小化",
+      "最大化-还原"
+    ]
+  },
+  {
+    "route": "workbench",
+    "hash": "#/workbench?project=prj-1",
+    "actualHash": "#/workbench?project=prj-1",
+    "stable": true,
+    "quietMs": 393,
+    "anchors": 38,
+    "domNodes": 382,
+    "cssRules": 2432,
+    "suspiciousText": [],
+    "ipcCalls": 52,
+    "uncoveredIpc": [],
+    "topAnchors": [
+      "项目",
+      "设置",
+      "账号",
+      "切换亮色-深色主题",
+      "最小化",
+      "最大化-还原"
+    ]
+  },
+  {
+    "route": "settings",
+    "hash": "#/settings",
+    "actualHash": "#/settings",
+    "stable": true,
+    "quietMs": 407,
+    "anchors": 21,
+    "domNodes": 230,
+    "cssRules": 1631,
+    "suspiciousText": [],
+    "ipcCalls": 38,
+    "uncoveredIpc": [],
+    "topAnchors": [
+      "项目",
+      "设置",
+      "账号",
+      "切换亮色-深色主题",
+      "最小化",
+      "最大化-还原"
+    ]
+  },
+  {
+    "route": "account",
+    "hash": "#/account",
+    "actualHash": "#/account",
+    "stable": true,
+    "quietMs": 407,
+    "anchors": 12,
+    "domNodes": 176,
+    "cssRules": 1631,
+    "suspiciousText": [],
+    "ipcCalls": 33,
+    "uncoveredIpc": [],
+    "topAnchors": [
+      "项目",
+      "设置",
+      "账号",
+      "切换亮色-深色主题",
+      "最小化",
+      "最大化-还原"
+    ]
+  }
+]

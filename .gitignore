@@ -1,0 +1,17 @@
+# 依赖
+node_modules/
+pnpm-lock.yaml.bak
+
+# 编辑器 / IDE
+.vscode/
+.idea/
+*.swp
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.tmp
+*.log
+~$*

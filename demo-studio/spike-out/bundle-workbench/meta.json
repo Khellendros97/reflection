@@ -1,0 +1,81 @@
+{
+  "meta": {
+    "url": "http://localhost:1420/#/workbench?project=prj-1",
+    "title": "AIShell",
+    "capturedAt": "2026-01-01T00:00:00.000Z",
+    "viewport": {
+      "w": 1440,
+      "h": 900,
+      "dpr": 1
+    },
+    "readyState": "complete"
+  },
+  "stats": {
+    "interactiveTotal": 43,
+    "interactiveSemantic": 31,
+    "interactiveSupplementary": 12,
+    "interactiveVisible": 38,
+    "anchors": 38,
+    "selectorNotUnique": 0,
+    "idCollisions": 2,
+    "cssRules": 2432,
+    "inlinedSheets": 0,
+    "fontFaces": 0,
+    "unresolvedCssUrls": 0,
+    "images": 0,
+    "domNodes": 382,
+    "formStateFixed": 4,
+    "scrollStateFixed": 0
+  },
+  "samples": {
+    "unresolvedCssUrls": [],
+    "images": [],
+    "i18nWarnings": [],
+    "ipcCalls": [
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "update_status",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "get_state",
+      "plugin:event|listen",
+      "cloud_status",
+      "plugin:event|listen",
+      "plugin:app|version",
+      "plugin:event|listen",
+      "plugin:window|is_maximized",
+      "tunnel_list",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "get_state",
+      "cloud_status",
+      "plugin:event|listen",
+      "get_state",
+      "get_state",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "ai_debug_info",
+      "sessions_get",
+      "get_state",
+      "plugin:event|listen",
+      "plugin:event|listen",
+      "staging_list",
+      "term_create",
+      "term_resize",
+      "get_state",
+      "term_resize"
+    ],
+    "determinism": {
+      "dateFrozen": true,
+      "randomSeeded": true,
+      "cssAnimationsDisabled": 1
+    },
+    "suspiciousText": []
+  }
+}

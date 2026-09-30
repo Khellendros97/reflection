@@ -1,0 +1,74 @@
+{
+  "url": "http://localhost:1420/",
+  "runs": [
+    {
+      "i": 1,
+      "stable": true,
+      "quietMs": 1025,
+      "totalMs": 3824,
+      "probes": 2
+    },
+    {
+      "i": 2,
+      "stable": true,
+      "quietMs": 429,
+      "totalMs": 1786,
+      "probes": 1
+    },
+    {
+      "i": 3,
+      "stable": true,
+      "quietMs": 448,
+      "totalMs": 1836,
+      "probes": 1
+    }
+  ],
+  "pairs": [
+    {
+      "a": "run1.png",
+      "b": "run2.png",
+      "byteEqual": false
+    },
+    {
+      "a": "run1.png",
+      "b": "run3.png",
+      "byteEqual": false
+    }
+  ],
+  "allByteEqual": false,
+  "exceptions": [],
+  "lastConsole": [
+    {
+      "type": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "log",
+      "text": "[AI] pi 运行时诊断:\n[object Object]"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "log",
+      "text": "[AI] pi 运行时诊断:\n[object Object]"
+    }
+  ]
+}

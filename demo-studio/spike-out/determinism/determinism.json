@@ -1,0 +1,73 @@
+{
+  "url": "http://localhost:1420/",
+  "settle": 2500,
+  "pairs": [
+    {
+      "name": "A 同页连拍（间隔 600ms）",
+      "byteEqual": false,
+      "a": "A1-same-page.png",
+      "b": "A2-same-page.png"
+    },
+    {
+      "name": "B 跨加载（同沉降 2.5s）",
+      "byteEqual": false,
+      "a": "A1-same-page.png",
+      "b": "B1-reload.png"
+    },
+    {
+      "name": "C 跨加载（沉降 7.5s + fonts.ready + 双 rAF）",
+      "byteEqual": false,
+      "a": "A1-same-page.png",
+      "b": "C1-settled.png"
+    },
+    {
+      "name": "C2 充分沉降后同页连拍",
+      "byteEqual": true,
+      "a": "C1-settled.png",
+      "b": "C2-settled-repeat.png"
+    }
+  ],
+  "exceptions": [],
+  "console": [
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "log",
+      "text": "[AI] pi 运行时诊断:\n[object Object]"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "log",
+      "text": "[AI] pi 运行时诊断:\n[object Object]"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "log",
+      "text": "[AI] pi 运行时诊断:\n[object Object]"
+    }
+  ]
+}

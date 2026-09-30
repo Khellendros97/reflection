@@ -1,0 +1,604 @@
+{
+  "formatVersion": 1,
+  "source": {
+    "kind": "captured",
+    "url": "http://localhost:1420/#/workbench?project=prj-1",
+    "capturedAt": "2026-01-01T00:00:00.000Z",
+    "viewport": {
+      "w": 1440,
+      "h": 900,
+      "dpr": 1
+    }
+  },
+  "anchors": [
+    {
+      "id": "项目",
+      "label": "项目",
+      "role": "button",
+      "tag": "button",
+      "selector": "#app > div.page-root > div.page-topbar:nth-of-type(1) > button.btn.small:nth-of-type(1)",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1106,
+        "y": 8,
+        "w": 46,
+        "h": 24
+      },
+      "disabled": false,
+      "text": "项目"
+    },
+    {
+      "id": "设置",
+      "label": "设置",
+      "role": "button",
+      "tag": "button",
+      "selector": "#app > div.page-root > div.page-topbar:nth-of-type(1) > button.btn.small:nth-of-type(2)",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1162,
+        "y": 8,
+        "w": 46,
+        "h": 24
+      },
+      "disabled": false,
+      "text": "设置"
+    },
+    {
+      "id": "账号",
+      "label": "账号",
+      "role": "button",
+      "tag": "button",
+      "selector": "#app > div.page-root > div.page-topbar:nth-of-type(1) > button.btn.small:nth-of-type(3)",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1218,
+        "y": 8,
+        "w": 46,
+        "h": 24
+      },
+      "disabled": false,
+      "text": "账号"
+    },
+    {
+      "id": "切换亮色-深色主题",
+      "label": "切换亮色 / 深色主题",
+      "role": "button",
+      "tag": "button",
+      "selector": "button[title=\"切换亮色 / 深色主题\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1274,
+        "y": 6,
+        "w": 28,
+        "h": 28
+      },
+      "disabled": false
+    },
+    {
+      "id": "最小化",
+      "label": "最小化",
+      "role": "button",
+      "tag": "button",
+      "selector": "button[title=\"最小化\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1318,
+        "y": 5,
+        "w": 34,
+        "h": 30
+      },
+      "disabled": false
+    },
+    {
+      "id": "最大化-还原",
+      "label": "最大化 / 还原",
+      "role": "button",
+      "tag": "button",
+      "selector": "button[title=\"最大化 / 还原\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1354,
+        "y": 5,
+        "w": 34,
+        "h": 30
+      },
+      "disabled": false
+    },
+    {
+      "id": "关闭",
+      "label": "关闭",
+      "role": "button",
+      "tag": "button",
+      "selector": "#app > div.page-root > div.page-topbar:nth-of-type(1) > div.tb-win-controls:nth-of-type(3) > button.tb-win-btn.tb-win-close:nth-of-type(3)",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1390,
+        "y": 5,
+        "w": 34,
+        "h": 30
+      },
+      "disabled": false
+    },
+    {
+      "id": "新建文件",
+      "label": "新建文件",
+      "role": "button",
+      "tag": "button",
+      "selector": "button[title=\"新建文件\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 213,
+        "y": 43,
+        "w": 28,
+        "h": 28
+      },
+      "disabled": false
+    },
+    {
+      "id": "新建目录",
+      "label": "新建目录",
+      "role": "button",
+      "tag": "button",
+      "selector": "button[title=\"新建目录\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 241,
+        "y": 43,
+        "w": 28,
+        "h": 28
+      },
+      "disabled": false
+    },
+    {
+      "id": "刷新",
+      "label": "刷新",
+      "role": "button",
+      "tag": "button",
+      "selector": "button[title=\"刷新\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 269,
+        "y": 43,
+        "w": 28,
+        "h": 28
+      },
+      "disabled": false
+    },
+    {
+      "id": "调整左侧边栏宽度",
+      "label": "调整左侧边栏宽度",
+      "role": "separator",
+      "tag": "div",
+      "selector": "#sidebar-resizer",
+      "selectorUnique": true,
+      "rect": {
+        "x": 308,
+        "y": 40,
+        "w": 6,
+        "h": 834
+      },
+      "disabled": false
+    },
+    {
+      "id": "关闭-2",
+      "label": "关闭",
+      "role": "button",
+      "tag": "button",
+      "selector": "#tab-bar button[title=\"关闭\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 401,
+        "y": 50,
+        "w": 18,
+        "h": 18
+      },
+      "disabled": false
+    },
+    {
+      "id": "历史命令",
+      "label": "历史命令",
+      "role": "button",
+      "tag": "button",
+      "selector": "button[title=\"历史命令\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 721,
+        "y": 81,
+        "w": 88,
+        "h": 24
+      },
+      "disabled": false,
+      "text": "历史命令"
+    },
+    {
+      "id": "命令收藏",
+      "label": "命令收藏",
+      "role": "button",
+      "tag": "button",
+      "selector": "#tab-content > div.tab-pane > div.term-root > div.term-info:nth-of-type(1) > button.btn.small:nth-of-type(2)",
+      "selectorUnique": true,
+      "rect": {
+        "x": 817,
+        "y": 81,
+        "w": 88,
+        "h": 24
+      },
+      "disabled": false,
+      "text": "命令收藏"
+    },
+    {
+      "id": "添加到chat",
+      "label": "添加到chat",
+      "role": "button",
+      "tag": "button",
+      "selector": "#tab-content > div.tab-pane > div.term-root > div.term-info:nth-of-type(1) > button.btn.small:nth-of-type(3)",
+      "selectorUnique": true,
+      "rect": {
+        "x": 913,
+        "y": 81,
+        "w": 99,
+        "h": 24
+      },
+      "disabled": false,
+      "text": "添加到chat"
+    },
+    {
+      "id": "录制终端输出到日志文件",
+      "label": "录制终端输出到日志文件",
+      "role": "button",
+      "tag": "button",
+      "selector": "button[title=\"录制终端输出到日志文件\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1020,
+        "y": 81,
+        "w": 64,
+        "h": 24
+      },
+      "disabled": false,
+      "text": "录制"
+    },
+    {
+      "id": "清空历史命令",
+      "label": "清空历史命令",
+      "role": "button",
+      "tag": "button",
+      "selector": "button[title=\"清空历史命令\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1008,
+        "y": 113,
+        "w": 28,
+        "h": 28
+      },
+      "disabled": true
+    },
+    {
+      "id": "收起",
+      "label": "收起",
+      "role": "button",
+      "tag": "button",
+      "selector": "div.term-main:nth-of-type(2) > div.term-drawer:nth-of-type(2) > div.term-drawer-head:nth-of-type(1) > span.term-drawer-actions:nth-of-type(2) > button.btn.small:nth-of-type(2)",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1040,
+        "y": 115,
+        "w": 46,
+        "h": 24
+      },
+      "disabled": false,
+      "text": "收起"
+    },
+    {
+      "id": "调整-ai-面板宽度",
+      "label": "调整 AI 面板宽度",
+      "role": "separator",
+      "tag": "div",
+      "selector": "#ai-resizer",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1094,
+        "y": 40,
+        "w": 6,
+        "h": 834
+      },
+      "disabled": false
+    },
+    {
+      "id": "切换会话",
+      "label": "切换会话",
+      "role": "button",
+      "tag": "button",
+      "type": "button",
+      "selector": "#ai-session-select",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1109,
+        "y": 47,
+        "w": 255,
+        "h": 26
+      },
+      "disabled": false,
+      "text": "新会话"
+    },
+    {
+      "id": "新建会话",
+      "label": "新建会话",
+      "role": "button",
+      "tag": "button",
+      "type": "button",
+      "selector": "#ai-new-session",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1370,
+        "y": 46,
+        "w": 28,
+        "h": 28
+      },
+      "disabled": false
+    },
+    {
+      "id": "分离到独立窗口",
+      "label": "分离到独立窗口",
+      "role": "button",
+      "tag": "button",
+      "type": "button",
+      "selector": "#ai-detach",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1404,
+        "y": 46,
+        "w": 28,
+        "h": 28
+      },
+      "disabled": false
+    },
+    {
+      "id": "ai-执行模式按项目持久化",
+      "label": "AI 执行模式（按项目持久化）",
+      "role": "select",
+      "tag": "select",
+      "selector": "#ai-mode-select",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1175,
+        "y": 760,
+        "w": 78,
+        "h": 22
+      },
+      "disabled": false,
+      "text": "仅建议\n工作\n全自动"
+    },
+    {
+      "id": "思考强度立即生效",
+      "label": "思考强度（立即生效）",
+      "role": "select",
+      "tag": "select",
+      "selector": "#ai-effort-select",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1324,
+        "y": 760,
+        "w": 78,
+        "h": 22
+      },
+      "disabled": false,
+      "text": "低\n高\n最高"
+    },
+    {
+      "id": "ai-对话输入框",
+      "label": "AI 对话输入框",
+      "role": "textbox",
+      "tag": "div",
+      "selector": "#ai-input",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1118,
+        "y": 801,
+        "w": 305,
+        "h": 58
+      },
+      "disabled": false
+    },
+    {
+      "id": "隐藏-ai-助手",
+      "label": "隐藏 AI 助手",
+      "role": "button",
+      "tag": "button",
+      "type": "button",
+      "selector": "button[title=\"隐藏 AI 助手\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1363,
+        "y": 877,
+        "w": 69,
+        "h": 22
+      },
+      "disabled": false,
+      "text": "AI 助手"
+    },
+    {
+      "id": "折叠侧栏",
+      "label": "折叠侧栏",
+      "role": "div",
+      "tag": "div",
+      "selector": "div[title=\"折叠侧栏\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 4,
+        "y": 46,
+        "w": 40,
+        "h": 40
+      },
+      "disabled": false
+    },
+    {
+      "id": "仪表盘",
+      "label": "仪表盘",
+      "role": "div",
+      "tag": "div",
+      "selector": "div[title=\"仪表盘\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 4,
+        "y": 88,
+        "w": 40,
+        "h": 40
+      },
+      "disabled": false
+    },
+    {
+      "id": "文件资源管理器",
+      "label": "文件资源管理器",
+      "role": "div",
+      "tag": "div",
+      "selector": "div[title=\"文件资源管理器\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 4,
+        "y": 130,
+        "w": 40,
+        "h": 40
+      },
+      "disabled": false
+    },
+    {
+      "id": "服务器列表",
+      "label": "服务器列表",
+      "role": "div",
+      "tag": "div",
+      "selector": "div[title=\"服务器列表\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 4,
+        "y": 172,
+        "w": 40,
+        "h": 40
+      },
+      "disabled": false
+    },
+    {
+      "id": "命令收藏-2",
+      "label": "命令收藏",
+      "role": "div",
+      "tag": "div",
+      "selector": "div[title=\"命令收藏\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 4,
+        "y": 214,
+        "w": 40,
+        "h": 40
+      },
+      "disabled": false
+    },
+    {
+      "id": "skill",
+      "label": "Skill",
+      "role": "div",
+      "tag": "div",
+      "selector": "div[title=\"Skill\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 4,
+        "y": 256,
+        "w": 40,
+        "h": 40
+      },
+      "disabled": false
+    },
+    {
+      "id": "笔记",
+      "label": "笔记",
+      "role": "div",
+      "tag": "div",
+      "selector": "div[title=\"笔记\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 4,
+        "y": 298,
+        "w": 40,
+        "h": 40
+      },
+      "disabled": false
+    },
+    {
+      "id": "项目时间线在标签页中打开",
+      "label": "项目时间线(在标签页中打开)",
+      "role": "div",
+      "tag": "div",
+      "selector": "div[title=\"项目时间线(在标签页中打开)\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 4,
+        "y": 340,
+        "w": 40,
+        "h": 40
+      },
+      "disabled": false
+    },
+    {
+      "id": "浏览器在标签页中打开",
+      "label": "浏览器(在标签页中打开)",
+      "role": "div",
+      "tag": "div",
+      "selector": "div[title=\"浏览器(在标签页中打开)\"]",
+      "selectorUnique": true,
+      "rect": {
+        "x": 4,
+        "y": 382,
+        "w": 40,
+        "h": 40
+      },
+      "disabled": false
+    },
+    {
+      "id": "本地终端",
+      "label": "本地终端",
+      "role": "span",
+      "tag": "span",
+      "selector": "#tab-bar > div.wb-tab > span.tab-title:nth-of-type(2)",
+      "selectorUnique": true,
+      "rect": {
+        "x": 345,
+        "y": 51,
+        "w": 50,
+        "h": 16
+      },
+      "disabled": false,
+      "text": "本地终端"
+    },
+    {
+      "id": "新会话",
+      "label": "新会话",
+      "role": "span",
+      "tag": "span",
+      "selector": "#ai-session-select > span.ai-session-current",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1118,
+        "y": 52,
+        "w": 36,
+        "h": 16
+      },
+      "disabled": false,
+      "text": "新会话"
+    },
+    {
+      "id": "ai-助手",
+      "label": "AI 助手",
+      "role": "span",
+      "tag": "span",
+      "selector": "#workbench-shell > div.app-statusbar:nth-of-type(2) > div.statusbar-right:nth-of-type(3) > button.statusbar-ai-toggle > span",
+      "selectorUnique": true,
+      "rect": {
+        "x": 1388,
+        "y": 880,
+        "w": 35,
+        "h": 15
+      },
+      "disabled": false,
+      "text": "AI 助手"
+    }
+  ]
+}

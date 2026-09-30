@@ -1,0 +1,147 @@
+{
+  "hash": "#/workbench?project=prj-1",
+  "actions": [
+    "仪表盘",
+    "文件资源管理器",
+    "服务器列表",
+    "命令收藏-2",
+    "历史命令"
+  ],
+  "sequential": [
+    {
+      "k": 0,
+      "fps": {
+        "hash": "f443677c",
+        "nodes": 230,
+        "bytes": 5663
+      },
+      "quietMs": 355
+    },
+    {
+      "k": 1,
+      "action": "仪表盘",
+      "clickOk": true,
+      "fps": {
+        "hash": "9854cdc0",
+        "nodes": 224,
+        "bytes": 5520
+      },
+      "quietMs": 342
+    },
+    {
+      "k": 2,
+      "action": "文件资源管理器",
+      "clickOk": true,
+      "fps": {
+        "hash": "caea2e9e",
+        "nodes": 230,
+        "bytes": 5628
+      },
+      "quietMs": 343
+    },
+    {
+      "k": 3,
+      "action": "服务器列表",
+      "clickOk": true,
+      "fps": {
+        "hash": "416b8ca4",
+        "nodes": 238,
+        "bytes": 5989
+      },
+      "quietMs": 352
+    },
+    {
+      "k": 4,
+      "action": "命令收藏-2",
+      "clickOk": true,
+      "fps": {
+        "hash": "2d17c3d8",
+        "nodes": 228,
+        "bytes": 5653
+      },
+      "quietMs": 342
+    },
+    {
+      "k": 5,
+      "action": "历史命令",
+      "clickOk": true,
+      "fps": {
+        "hash": "99f42261",
+        "nodes": 218,
+        "bytes": 5324
+      },
+      "quietMs": 341
+    }
+  ],
+  "replays": [
+    {
+      "k": 0,
+      "fps": {
+        "hash": "f443677c",
+        "nodes": 230,
+        "bytes": 5663
+      },
+      "expect": "f443677c",
+      "match": true,
+      "totalMs": 2269
+    },
+    {
+      "k": 1,
+      "fps": {
+        "hash": "9854cdc0",
+        "nodes": 224,
+        "bytes": 5520
+      },
+      "expect": "9854cdc0",
+      "match": true,
+      "totalMs": 3415
+    },
+    {
+      "k": 2,
+      "fps": {
+        "hash": "caea2e9e",
+        "nodes": 230,
+        "bytes": 5628
+      },
+      "expect": "caea2e9e",
+      "match": true,
+      "totalMs": 4513
+    },
+    {
+      "k": 3,
+      "fps": {
+        "hash": "416b8ca4",
+        "nodes": 238,
+        "bytes": 5989
+      },
+      "expect": "416b8ca4",
+      "match": true,
+      "totalMs": 5642
+    },
+    {
+      "k": 4,
+      "fps": {
+        "hash": "2d17c3d8",
+        "nodes": 228,
+        "bytes": 5653
+      },
+      "expect": "2d17c3d8",
+      "match": true,
+      "totalMs": 6701
+    },
+    {
+      "k": 5,
+      "fps": {
+        "hash": "99f42261",
+        "nodes": 218,
+        "bytes": 5324
+      },
+      "expect": "99f42261",
+      "match": true,
+      "totalMs": 7835
+    }
+  ],
+  "verdict": {
+    "allMatch": true
+  }
+}
